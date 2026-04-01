@@ -1,0 +1,2456 @@
+<!DOCTYPE html><html lang="zh-CN"><head>
+    <meta charset="UTF-8"/>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+    <title>电商与金融行业客户管理系统核心数据模型设计</title>
+    <script src="assets/js/tailwind.min.js"></script>
+    <link href="assets/css/google-fonts.css" rel="stylesheet"/>
+    <link rel="stylesheet" href="assets/css/fontawesome.min.css"/>
+    <script src="assets/js/mermaid.min.js"></script>
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    fontFamily: {
+                        'serif': ['Playfair Display', 'serif'],
+                        'sans': ['Inter', 'sans-serif']
+                    },
+                    colors: {
+                        'earth': {
+                            50: '#faf9f7',
+                            100: '#f4f2ef',
+                            200: '#e8e4df',
+                            300: '#d7d0c7',
+                            400: '#c4b8a9',
+                            500: '#b5a590',
+                            600: '#a8957f',
+                            700: '#8b7c6a',
+                            800: '#726659',
+                            900: '#5d5349'
+                        },
+                        'navy': {
+                            50: '#f0f4f8',
+                            100: '#d9e2ec',
+                            200: '#bcccdc',
+                            300: '#9fb3c8',
+                            400: '#829ab1',
+                            500: '#627d98',
+                            600: '#486581',
+                            700: '#334e68',
+                            800: '#243b53',
+                            900: '#102a43'
+                        }
+                    }
+                }
+            }
+        }
+    </script>
+    <style>
+        .bg-gradient-subtle {
+            background: linear-gradient(135deg, #faf9f7 0%, #f4f2ef 100%);
+        }
+        
+        .text-gradient {
+            background: linear-gradient(135deg, #334e68 0%, #486581 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+        
+        .hero-overlay {
+            background: linear-gradient(135deg, rgba(51, 78, 104, 0.9) 0%, rgba(72, 101, 129, 0.8) 100%);
+        }
+        
+        .toc-fixed {
+            position: fixed;
+            top: 2rem;
+            left: 2rem;
+            width: 280px;
+            max-height: calc(100vh - 4rem);
+            overflow-y: auto;
+            z-index: 50;
+            background: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(10px);
+            border: 1px solid #e8e4df;
+            border-radius: 12px;
+            padding: 1.5rem;
+            box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1);
+        }
+        
+        .main-content {
+            margin-left: 320px;
+            padding: 2rem;
+        }
+        
+        .citation-link {
+            color: #627d98;
+            text-decoration: none;
+            font-size: 0.75rem;
+            vertical-align: super;
+            margin-left: 2px;
+        }
+        
+        .citation-link:hover {
+            color: #334e68;
+            text-decoration: underline;
+        }
+        
+        .bento-grid {
+            display: grid;
+            grid-template-columns: 2fr 1fr;
+            gap: 2rem;
+            margin-bottom: 3rem;
+        }
+        
+        .bento-item {
+            background: white;
+            border-radius: 16px;
+            padding: 2rem;
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+            border: 1px solid #e8e4df;
+        }
+        
+        .highlight-card {
+            background: linear-gradient(135deg, #f0f4f8 0%, #d9e2ec 100%);
+            border: 1px solid #bcccdc;
+        }
+        
+        /* Mermaid diagram styles */
+        .mermaid-container {
+            display: flex;
+            justify-content: center;
+            min-height: 300px;
+            max-height: 800px;
+            background: #ffffff;
+            border: 2px solid #e5e7eb;
+            border-radius: 12px;
+            padding: 30px;
+            margin: 30px 0;
+            box-shadow: 0 8px 25px rgba(0, 0, 0, 0.08);
+            position: relative;
+            overflow: hidden;
+        }
+
+        .mermaid-container .mermaid {
+            width: 100%;
+            max-width: 100%;
+            height: 100%;
+            cursor: grab;
+            transition: transform 0.3s ease;
+            transform-origin: center center;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            touch-action: none; /* 防止触摸设备上的默认行为 */
+            -webkit-user-select: none; /* 防止文本选择 */
+            -moz-user-select: none;
+            -ms-user-select: none;
+            user-select: none;
+        }
+
+        .mermaid-container .mermaid svg {
+            max-width: 100%;
+            height: 100%;
+            display: block;
+            margin: 0 auto;
+        }
+
+        .mermaid-container .mermaid:active {
+            cursor: grabbing;
+        }
+
+        .mermaid-container.zoomed .mermaid {
+            height: 100%;
+            width: 100%;
+            cursor: grab;
+        }
+
+        .mermaid-controls {
+            position: absolute;
+            top: 15px;
+            right: 15px;
+            display: flex;
+            gap: 10px;
+            z-index: 20;
+            background: rgba(255, 255, 255, 0.95);
+            padding: 8px;
+            border-radius: 8px;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+        }
+
+        .mermaid-control-btn {
+            background: #ffffff;
+            border: 1px solid #d1d5db;
+            border-radius: 6px;
+            padding: 10px;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            color: #374151;
+            font-size: 14px;
+            min-width: 36px;
+            height: 36px;
+            text-align: center;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .mermaid-control-btn:hover {
+            background: #f8fafc;
+            border-color: #3b82f6;
+            color: #3b82f6;
+            transform: translateY(-1px);
+        }
+
+        .mermaid-control-btn:active {
+            transform: scale(0.95);
+        }
+        
+        /* Enhanced mermaid node styling for better contrast and consistency */
+        .mermaid .node rect,
+        .mermaid .node circle,
+        .mermaid .node polygon {
+            stroke-width: 2px !important;
+        }
+        
+        .mermaid .node text {
+            font-family: 'Inter', sans-serif !important;
+            font-size: 13px !important;
+            font-weight: 500 !important;
+        }
+        
+        .mermaid .edgeLabel {
+            background-color: rgba(255, 255, 255, 0.9) !important;
+            padding: 4px 8px !important;
+            border-radius: 4px !important;
+            font-family: 'Inter', sans-serif !important;
+            font-size: 11px !important;
+            font-weight: 500 !important;
+        }
+        
+        /* Specific color overrides for better contrast */
+        .mermaid .node[class*="default"] rect,
+        .mermaid .node[class*="default"] polygon {
+            fill: #ffffff !important;
+            stroke: #334e68 !important;
+        }
+        
+        .mermaid .node[class*="primary"] rect,
+        .mermaid .node[class*="primary"] polygon {
+            fill: #f0f4f8 !important;
+            stroke: #334e68 !important;
+        }
+        
+        .mermaid .node[class*="secondary"] rect,
+        .mermaid .node[class*="secondary"] polygon {
+            fill: #e8e4df !important;
+            stroke: #5d5349 !important;
+        }
+        
+        .mermaid .node text {
+            fill: #334e68 !important;
+            font-weight: 600 !important;
+        }
+        
+        .mermaid .edgePath path {
+            stroke: #627d98 !important;
+            stroke-width: 2px !important;
+        }
+        
+        .mermaid .marker {
+            fill: #627d98 !important;
+        }
+        
+        @media (max-width: 1024px) {
+            .toc-fixed {
+                display: none;
+            }
+            .main-content {
+                margin-left: 0;
+            }
+            .bento-grid {
+                grid-template-columns: 1fr;
+            }
+            .mermaid-control-btn:not(.reset-zoom) {
+                display: none;
+            }
+            .mermaid-controls {
+                top: auto;
+                bottom: 15px;
+                right: 15px;
+            }
+        }
+
+        @media (max-width: 768px) {
+            .mermaid-container {
+                overflow-x: auto; /* 水平滚动 */
+            }
+        }
+
+        @media (max-width: 640px) {
+            .main-content {
+                padding: 1rem; /* 减少内边距 */
+            }
+            .bento-item {
+                padding: 1rem; /* 减少内边距 */
+            }
+        }
+    </style>
+  <base target="_blank">
+</head>
+
+  <body class="bg-gradient-subtle font-sans text-gray-800 leading-relaxed">
+    <!-- Fixed Table of Contents -->
+    <nav class="toc-fixed">
+      <h3 class="font-serif font-bold text-lg text-navy-800 mb-4">目录导航</h3>
+      <ul class="space-y-2 text-sm">
+        <li>
+          <a href="#introduction" class="block py-1 px-2 rounded hover:bg-earth-100 transition-colors">引言概述</a>
+        </li>
+        <li>
+          <a href="#principles" class="block py-1 px-2 rounded hover:bg-earth-100 transition-colors">设计原则与战略定位</a>
+        </li>
+        <li>
+          <a href="#core-architecture" class="block py-1 px-2 rounded hover:bg-earth-100 transition-colors">核心实体架构</a>
+        </li>
+        <li>
+          <a href="#transaction-behavior" class="block py-1 px-2 rounded hover:bg-earth-100 transition-colors">交易与行为数据模型</a>
+        </li>
+        <li>
+          <a href="#risk-compliance" class="block py-1 px-2 rounded hover:bg-earth-100 transition-colors">风险与合规数据模型</a>
+        </li>
+        <li>
+          <a href="#personalization" class="block py-1 px-2 rounded hover:bg-earth-100 transition-colors">个性化与营销数据模型</a>
+        </li>
+        <li>
+          <a href="#relationship-network" class="block py-1 px-2 rounded hover:bg-earth-100 transition-colors">关系网络数据模型</a>
+        </li>
+        <li>
+          <a href="#implementation" class="block py-1 px-2 rounded hover:bg-earth-100 transition-colors">数据模型实现架构</a>
+        </li>
+      </ul>
+    </nav>
+
+    <!-- Main Content -->
+    <main class="main-content">
+      <!-- Hero Section with Bento Layout -->
+      <section class="mb-16">
+        <div class="bento-grid">
+          <!-- Main Hero Content -->
+          <div class="bento-item relative overflow-hidden">
+            <div class="absolute inset-0 hero-overlay"></div>
+            <img src="assets/images/hero-background.jpg" alt="金融数据网络抽象背景" class="absolute inset-0 w-full h-full object-cover opacity-20" size="wallpaper" aspect="wide" query="金融数据网络背景" referrerpolicy="no-referrer" data-modified="1" data-score="0.00"/>
+            <div class="relative z-10 text-white">
+              <h1 class="font-serif text-4xl lg:text-5xl font-bold mb-6 italic leading-tight">
+                电商与金融行业
+                <span class="block text-3xl lg:text-4xl opacity-90 mt-2">客户管理系统核心数据模型设计</span>
+              </h1>
+              <p class="text-lg opacity-90 leading-relaxed">
+                构建统一客户画像，打通数据孤岛，实现360°客户全景视图
+              </p>
+              <div class="mt-8 flex items-center space-x-6 text-sm opacity-80">
+                <span><i class="fas fa-cogs mr-2"></i>分层架构设计</span>
+                <span><i class="fas fa-shield-alt mr-2"></i>合规安全优先</span>
+                <span><i class="fas fa-chart-line mr-2"></i>实时特征计算</span>
+              </div>
+            </div>
+          </div>
+
+          <!-- Key Highlights -->
+          <div class="space-y-4">
+            <div class="highlight-card bento-item">
+              <div class="flex items-center mb-3">
+                <i class="fas fa-fingerprint text-navy-600 text-xl mr-3"></i>
+                <h3 class="font-serif font-bold text-lg">One ID统一身份</h3>
+              </div>
+              <p class="text-sm text-gray-600 break-words">打破数据孤岛，实现客户全渠道身份识别与统一</p>
+            </div>
+
+            <div class="highlight-card bento-item">
+              <div class="flex items-center mb-3">
+                <i class="fas fa-clock text-navy-600 text-xl mr-3"></i>
+                <h3 class="font-serif font-bold text-lg">实时特征计算</h3>
+              </div>
+              <p class="text-sm text-gray-600 break-words">支撑秒级决策，动态识别客户关键决策时刻</p>
+            </div>
+
+            <div class="highlight-card bento-item">
+              <div class="flex items-center mb-3">
+                <i class="fas fa-lock text-navy-600 text-xl mr-3"></i>
+                <h3 class="font-serif font-bold text-lg">隐私计算技术</h3>
+              </div>
+              <p class="text-sm text-gray-600 break-words">保障合规安全，满足GDPR与个人信息保护法要求</p>
+            </div>
+
+            <div class="highlight-card bento-item">
+              <div class="flex items-center mb-3">
+                <i class="fas fa-tags text-navy-600 text-xl mr-3"></i>
+                <h3 class="font-serif font-bold text-lg">可扩展标签体系</h3>
+              </div>
+              <p class="text-sm text-gray-600 break-words">适应业务迭代，支持快速变化的市场需求</p>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- TL;DR Summary -->
+      <section id="introduction" class="mb-16">
+        <div class="bg-white rounded-16 p-8 border border-earth-200 shadow-sm">
+          <h2 class="font-serif text-2xl font-bold text-navy-800 mb-6">
+            <i class="fas fa-lightbulb text-earth-500 mr-3"></i>
+            核心要点概述
+          </h2>
+          <div class="prose prose-lg max-w-none">
+            <p class="text-lg leading-relaxed text-gray-700">
+              电商与金融行业融合的客户管理系统核心数据模型应采用<strong>分层架构设计</strong>，以<strong>客户主数据（Customer）</strong>为中心，向外扩展<strong>联系信息（Contact &amp; Address）、账户体系（Account）、交易与行为数据（Transaction &amp; Order &amp; BehavioralEvent）、风险与合规（RiskAssessment &amp; ComplianceAudit）、个性化营销（CustomerTag &amp; Preference）</strong>六大核心实体域。
+            </p>
+            <p class="text-gray-600 mt-4">
+              关键设计原则包括：<strong>One ID统一身份识别</strong>打破数据孤岛、<strong>实时特征计算</strong>支撑秒级决策、<strong>隐私计算技术</strong>保障合规安全、<strong>可扩展标签体系</strong>适应业务迭代。模型需同时满足电商场景的高并发个性化推荐与金融场景的严格KYC/AML合规要求，最终构建<strong>360°客户全景视图</strong>实现数据资产化运营。
+            </p>
+          </div>
+        </div>
+      </section>
+
+      <!-- Design Principles &amp; Strategic Positioning -->
+      <section id="principles" class="mb-16">
+        <h2 class="font-serif text-3xl font-bold text-navy-800 mb-8">设计原则与战略定位</h2>
+
+        <div class="grid grid-cols-1 lg:grid-cols-2 gap-8 mb-12">
+          <!-- E-commerce Requirements -->
+          <div class="bg-white rounded-16 p-6 border border-earth-200 shadow-sm">
+            <h3 class="font-serif text-xl font-bold text-earth-700 mb-4">
+              <i class="fas fa-shopping-cart text-earth-500 mr-3"></i>
+              电商行业核心需求
+            </h3>
+            <div class="space-y-4">
+              <div class="flex items-start space-x-3">
+                <div class="w-2 h-2 bg-earth-400 rounded-full mt-2"></div>
+                <div>
+                  <h4 class="font-semibold text-gray-800">个性化体验</h4>
+                  <p class="text-sm text-gray-600">统一客户画像在零售电商领域的应用正在快速增长，亚太地区预计将以<strong>21.5%的年复合增长率</strong>持续扩张至2033年<a href="https://marketintelo.com/report/unified-customer-profile-for-commerce-market" class="citation-link">[108]</a>
+                  </p>
+                </div>
+              </div>
+              <div class="flex items-start space-x-3">
+                <div class="w-2 h-2 bg-earth-400 rounded-full mt-2"></div>
+                <div>
+                  <h4 class="font-semibold text-gray-800">行为追踪</h4>
+                  <p class="text-sm text-gray-600">捕获页面浏览路径、点击流、搜索关键词等海量行为数据，支撑动态个性化推荐</p>
+                </div>
+              </div>
+              <div class="flex items-start space-x-3">
+                <div class="w-2 h-2 bg-earth-400 rounded-full mt-2"></div>
+                <div>
+                  <h4 class="font-semibold text-gray-800">精准营销</h4>
+                  <p class="text-sm text-gray-600">通过RFM+LTV模型成功将高价值潜客的复购率提升<strong>30%</strong>，流失率下降<strong>22%</strong>
+                    <a href="https://www.finereport.com/blog/article/69ac510c68fee269e90d272a" class="citation-link">[70]</a>
+                  </p>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Financial Industry Requirements -->
+          <div class="bg-white rounded-16 p-6 border border-earth-200 shadow-sm">
+            <h3 class="font-serif text-xl font-bold text-navy-700 mb-4">
+              <i class="fas fa-university text-navy-500 mr-3"></i>
+              金融行业核心需求
+            </h3>
+            <div class="space-y-4">
+              <div class="flex items-start space-x-3">
+                <div class="w-2 h-2 bg-navy-400 rounded-full mt-2"></div>
+                <div>
+                  <h4 class="font-semibold text-gray-800">合规风控</h4>
+                  <p class="text-sm text-gray-600">金融机构面临&#34;获客成本高但转化率不足5%&#34;、&#34;风控滞后导致坏账率攀升&#34;等痛点<a href="http://www.51ima.com/news/11640.html" class="citation-link">[124]</a>
+                  </p>
+                </div>
+              </div>
+              <div class="flex items-start space-x-3">
+                <div class="w-2 h-2 bg-navy-400 rounded-full mt-2"></div>
+                <div>
+                  <h4 class="font-semibold text-gray-800">KYC/AML</h4>
+                  <p class="text-sm text-gray-600">完整的KYC信息记录、AML监测数据、信用评估数据以及交易风险标记</p>
+                </div>
+              </div>
+              <div class="flex items-start space-x-3">
+                <div class="w-2 h-2 bg-navy-400 rounded-full mt-2"></div>
+                <div>
+                  <h4 class="font-semibold text-gray-800">信用评估</h4>
+                  <p class="text-sm text-gray-600">整合外部征信数据，构建内部信用评分模型，管理信用额度与违约概率计算</p>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Key Design Principles -->
+        <div class="bg-white rounded-16 p-8 border border-earth-200 shadow-sm">
+          <h3 class="font-serif text-2xl font-bold text-navy-800 mb-6">关键设计原则</h3>
+
+          <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
+            <div class="space-y-6">
+              <div class="border-l-4 border-earth-400 pl-6">
+                <h4 class="font-serif text-lg font-bold text-earth-700 mb-2">客户数据资产化</h4>
+                <p class="text-sm text-gray-600 mb-3">将分散数据转化为可运营资产，建立系统化的数据治理框架</p>
+                <ul class="text-xs text-gray-500 space-y-1">
+                  <li>• 数据质量管理、标准化、血缘追踪</li>
+                  <li>• RFM模型快速识别高价值客户<a href="https://www.finereport.com/blog/article/69ac510c68fee269e90d272a" class="citation-link">[70]</a>
+                  </li>
+                  <li>• LTV预测聚焦&#34;长期油田型&#34;客户</li>
+                </ul>
+              </div>
+
+              <div class="border-l-4 border-navy-400 pl-6">
+                <h4 class="font-serif text-lg font-bold text-navy-700 mb-2">数据整合与统一</h4>
+                <p class="text-sm text-gray-600 mb-3">打破系统孤岛，建立单一可信数据源</p>
+                <ul class="text-xs text-gray-500 space-y-1">
+                  <li>• One ID身份解析技术，覆盖率从45%提升至92%<a href="http://www.51ima.com/news/11640.html" class="citation-link">[124]</a>
+                  </li>
+                  <li>• 客户主数据层生成黄金记录<a href="https://help.aliyun.com/zh/dataworks/user-guide/data-modeling-for-the-retail-and-e-commerce-industries" class="citation-link">[57]</a>
+                  </li>
+                  <li>• 多维度数据整合，客户画像完整度从47%提升至89%<a href="https://huanjucrm.com/News/article-49.shtml" class="citation-link">[69]</a>
+                  </li>
+                </ul>
+              </div>
+            </div>
+
+            <div class="space-y-6">
+              <div class="border-l-4 border-earth-600 pl-6">
+                <h4 class="font-serif text-lg font-bold text-earth-800 mb-2">合规与安全优先</h4>
+                <p class="text-sm text-gray-600 mb-3">满足GDPR、个人信息保护法等监管要求</p>
+                <ul class="text-xs text-gray-500 space-y-1">
+                  <li>• 完整的同意管理机制<a href="https://developer.salesforce.com/docs/data/data-cloud-dmo-mapping/guide/c360dm-datamodelobjects.html" class="citation-link">[54]</a>
+                  </li>
+                  <li>• 敏感数据脱敏与加密存储</li>
+                  <li>• 细粒度访问控制和完整操作审计</li>
+                </ul>
+              </div>
+
+              <div class="border-l-4 border-navy-600 pl-6">
+                <h4 class="font-serif text-lg font-bold text-navy-800 mb-2">可扩展性与灵活性</h4>
+                <p class="text-sm text-gray-600 mb-3">支持业务快速迭代与多场景适配</p>
+                <ul class="text-xs text-gray-500 space-y-1">
+                  <li>• 标准且可定制的业务对象<a href="https://developer.salesforce.com/docs/commerce/salesforce-commerce/guide/b2b-b2c-dev-data-model.html" class="citation-link">[43]</a>
+                  </li>
+                  <li>• EAV模式或JSON字段支持动态属性扩展</li>
+                  <li>• 多租户架构和国际化部署支持</li>
+                </ul>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- Core Entity Architecture -->
+      <section id="core-architecture" class="mb-16">
+        <h2 class="font-serif text-3xl font-bold text-navy-800 mb-8">核心实体架构</h2>
+
+        <!-- Core Architecture Diagram -->
+        <div class="bg-white rounded-16 p-6 border border-earth-200 shadow-sm mb-8">
+          <h3 class="font-serif text-xl font-bold text-navy-800 mb-4 text-center">客户数据模型核心实体关系图</h3>
+          <div class="mermaid-container">
+            <div class="mermaid-controls">
+              <button class="mermaid-control-btn zoom-in" title="放大">
+                <i class="fas fa-search-plus"></i>
+              </button>
+              <button class="mermaid-control-btn zoom-out" title="缩小">
+                <i class="fas fa-search-minus"></i>
+              </button>
+              <button class="mermaid-control-btn reset-zoom" title="重置">
+                <i class="fas fa-expand-arrows-alt"></i>
+              </button>
+              <button class="mermaid-control-btn fullscreen" title="全屏查看">
+                <i class="fas fa-expand"></i>
+              </button>
+            </div>
+            <div class="mermaid">
+              erDiagram
+              Customer ||--o{ Contact : &#34;拥有多种&#34;
+              Customer ||--o{ Address : &#34;拥有多种&#34;
+              Customer ||--o{ Account : &#34;拥有多个&#34;
+              Customer ||--o{ Transaction : &#34;产生多条&#34;
+              Customer ||--o{ Order : &#34;创建多个&#34;
+              Customer ||--o{ BehavioralEvent : &#34;产生多条&#34;
+              Customer ||--|| RiskAssessment : &#34;关联&#34;
+              Customer ||--o{ CustomerTag : &#34;打有多个&#34;
+              Customer ||--|| CustomerPreference : &#34;具有&#34;
+              Customer ||--o{ MarketingInteraction : &#34;参与多次&#34;
+
+              Account ||--o{ FinancialAccount : &#34;扩展为&#34;
+              Account ||--o{ EcommerceAccount : &#34;扩展为&#34;
+              Transaction ||--|| Order : &#34;关联&#34;
+              Transaction ||--o{ TransactionRisk : &#34;标记&#34;
+              Order ||--o{ OrderItem : &#34;包含多个&#34;
+
+              Customer {
+              string customer_id PK
+              string customer_type
+              string status
+              datetime created_at
+              }
+
+              Contact {
+              string contact_id PK
+              string customer_id FK
+              string contact_type
+              string contact_value
+              int priority
+              boolean is_valid
+              }
+
+              Address {
+              string address_id PK
+              string customer_id FK
+              string address_type
+              string country
+              string province
+              string city
+              string street
+              string postal_code
+              float latitude
+              float longitude
+              }
+
+              Account {
+              string account_id PK
+              string customer_id FK
+              string account_type
+              string status
+              decimal balance
+              datetime open_date
+              datetime close_date
+              }
+
+              Transaction {
+              string transaction_id PK
+              string customer_id FK
+              string order_id FK
+              datetime transaction_time
+              decimal amount
+              string currency
+              string transaction_type
+              string channel
+              string risk_level
+              }
+
+              Order {
+              string order_id PK
+              string customer_id FK
+              string order_number
+              datetime order_time
+              string status
+              decimal total_amount
+              }
+
+              BehavioralEvent {
+              string event_id PK
+              string customer_id FK
+              string event_type
+              string page_url
+              string element_id
+              datetime event_time
+              json event_attributes
+              }
+
+              RiskAssessment {
+              string customer_id PK,FK
+              int kyc_level
+              string aml_status
+              string credit_score
+              string risk_level
+              datetime last_screened
+              }
+
+              CustomerTag {
+              string tag_id PK
+              string customer_id FK
+              string tag_name
+              string tag_category
+              float tag_score
+              datetime valid_until
+              }
+
+              CustomerPreference {
+              string customer_id PK,FK
+              json channel_preferences
+              json content_preferences
+              json timing_preferences
+              datetime last_updated
+              }
+            </div>
+          </div>
+          <p class="text-sm text-gray-600 mt-4 text-center">
+            图：客户管理系统核心实体关系图，展示客户主数据与各扩展实体的关联关系
+          </p>
+        </div>
+
+        <!-- Customer Master Data -->
+        <div class="bg-white rounded-16 p-8 border border-earth-200 shadow-sm mb-8">
+          <h3 class="font-serif text-2xl font-bold text-navy-800 mb-6">客户主数据实体（Customer）</h3>
+
+          <div class="grid grid-cols-1 lg:grid-cols-3 gap-6 mb-8">
+            <div class="space-y-4">
+              <h4 class="font-serif text-lg font-bold text-earth-700">基础属性层</h4>
+              <div class="space-y-3">
+                <div class="bg-earth-50 p-4 rounded-lg">
+                  <h5 class="font-semibold text-earth-800 mb-2">客户唯一标识</h5>
+                  <p class="text-sm text-gray-600">UUID或雪花算法生成的64位长整型ID，确保分布式环境下的全局唯一性<a href="https://www.zoho.com.cn/crm/articles/core-elements16.html" class="citation-link">[1]</a>
+                  </p>
+                </div>
+                <div class="bg-earth-50 p-4 rounded-lg">
+                  <h5 class="font-semibold text-earth-800 mb-2">客户类型区分</h5>
+                  <p class="text-sm text-gray-600">IndividualCustomer（个人客户）与OrganizationCustomer（企业/组织客户）的继承体系</p>
+                </div>
+                <div class="bg-earth-50 p-4 rounded-lg">
+                  <h5 class="font-semibold text-earth-800 mb-2">生命周期状态</h5>
+                  <p class="text-sm text-gray-600">潜在客户、新客户、成长客户、成熟客户、衰退客户、流失客户等状态管理</p>
+                </div>
+              </div>
+            </div>
+
+            <div class="space-y-4">
+              <h4 class="font-serif text-lg font-bold text-earth-700">个人客户专属属性</h4>
+              <div class="space-y-3">
+                <div class="bg-navy-50 p-4 rounded-lg">
+                  <h5 class="font-semibold text-navy-800 mb-2">身份认证信息</h5>
+                  <p class="text-sm text-gray-600">姓名、性别、出生日期、国籍等KYC基础数据</p>
+                </div>
+                <div class="bg-navy-50 p-4 rounded-lg">
+                  <h5 class="font-semibold text-navy-800 mb-2">证件信息</h5>
+                  <p class="text-sm text-gray-600">身份证、护照等证件类型、号码、有效期管理，AES-256加密存储</p>
+                </div>
+                <div class="bg-navy-50 p-4 rounded-lg">
+                  <h5 class="font-semibold text-navy-800 mb-2">生物特征数据</h5>
+                  <p class="text-sm text-gray-600">人脸特征、指纹等加密存储，硬件安全模块（HSM）保护</p>
+                </div>
+              </div>
+            </div>
+
+            <div class="space-y-4">
+              <h4 class="font-serif text-lg font-bold text-earth-700">企业客户专属属性</h4>
+              <div class="space-y-3">
+                <div class="bg-earth-50 p-4 rounded-lg">
+                  <h5 class="font-semibold text-earth-800 mb-2">企业基本信息</h5>
+                  <p class="text-sm text-gray-600">企业名称、统一社会信用代码、注册地址等法定信息<a href="https://www.zoho.com.cn/crm/articles/core-elements16.html" class="citation-link">[1]</a>
+                  </p>
+                </div>
+                <div class="bg-earth-50 p-4 rounded-lg">
+                  <h5 class="font-semibold text-earth-800 mb-2">企业经营信息</h5>
+                  <p class="text-sm text-gray-600">行业分类、企业规模、成立时间、注册资本等信用评估要素</p>
+                </div>
+                <div class="bg-earth-50 p-4 rounded-lg">
+                  <h5 class="font-semibold text-earth-800 mb-2">法人及授权代表</h5>
+                  <p class="text-sm text-gray-600">法定代表人信息、授权代表关系链、受益所有人识别</p>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Contact &amp; Address Information -->
+        <div class="grid grid-cols-1 lg:grid-cols-2 gap-8 mb-8">
+          <div class="bg-white rounded-16 p-6 border border-earth-200 shadow-sm">
+            <h3 class="font-serif text-xl font-bold text-navy-800 mb-4">
+              <i class="fas fa-phone text-navy-500 mr-3"></i>
+              联系信息实体（Contact）
+            </h3>
+            <div class="space-y-4">
+              <div class="border-l-3 border-navy-400 pl-4">
+                <h4 class="font-semibold text-navy-700 mb-2">多渠道联系信息</h4>
+                <p class="text-sm text-gray-600 mb-2">手机、固话、邮箱、即时通讯账号的统一管理<a href="https://www.zoho.com.cn/crm/articles/core-elements16.html" class="citation-link">[1]</a>
+                </p>
+                <ul class="text-xs text-gray-500 space-y-1">
+                  <li>• 手机号段识别、运营商归属</li>
+                  <li>• 邮箱格式校验与企业邮箱识别</li>
+                  <li>• 微信OpenID、支付宝UserID等第三方标识</li>
+                </ul>
+              </div>
+              <div class="border-l-3 border-navy-400 pl-4">
+                <h4 class="font-semibold text-navy-700 mb-2">优先级与有效性标记</h4>
+                <p class="text-sm text-gray-600 mb-2">基于客户偏好、历史响应数据的多维优先级判定</p>
+                <ul class="text-xs text-gray-500 space-y-1">
+                  <li>• 客户显式设置的首选渠道（最高权重）</li>
+                  <li>• 最近使用频率、验证状态、历史响应率</li>
+                  <li>• 主动、待验证、验证失败、暂停、限制等状态</li>
+                </ul>
+              </div>
+              <div class="border-l-3 border-navy-400 pl-4">
+                <h4 class="font-semibold text-navy-700 mb-2">营销触达偏好</h4>
+                <p class="text-sm text-gray-600 mb-2">GDPR合规要求的多维度granular控制</p>
+                <ul class="text-xs text-gray-500 space-y-1">
+                  <li>• 渠道偏好、内容偏好、频率上限</li>
+                  <li>• 时段偏好、品类偏好管理</li>
+                  <li>• 同意记录与撤回机制</li>
+                </ul>
+              </div>
+            </div>
+          </div>
+
+          <div class="bg-white rounded-16 p-6 border border-earth-200 shadow-sm">
+            <h3 class="font-serif text-xl font-bold text-earth-800 mb-4">
+              <i class="fas fa-map-marker-alt text-earth-500 mr-3"></i>
+              地址信息实体（Address）
+            </h3>
+            <div class="space-y-4">
+              <div class="border-l-3 border-earth-400 pl-4">
+                <h4 class="font-semibold text-earth-700 mb-2">多地址类型管理</h4>
+                <p class="text-sm text-gray-600 mb-2">居住地址、工作地址、收货地址、注册地址等<a href="https://www.zoho.com.cn/crm/articles/core-elements16.html" class="citation-link">[1]</a>
+                </p>
+                <ul class="text-xs text-gray-500 space-y-1">
+                  <li>• 地址标准化与地理编码（经度、纬度）</li>
+                  <li>• 行政区划识别、道路POI匹配</li>
+                  <li>• 多地址有效性验证与更新历史</li>
+                </ul>
+              </div>
+              <div class="border-l-3 border-earth-400 pl-4">
+                <h4 class="font-semibold text-earth-700 mb-2">地址标准化</h4>
+                <p class="text-sm text-gray-600 mb-2">将非结构化地址文本转化为规范的结构化数据</p>
+                <ul class="text-xs text-gray-500 space-y-1">
+                  <li>• 格式统一：按&#34;省-市-区-街道-门牌&#34;层级组织</li>
+                  <li>• 精度级别：行政区划到门牌号级别</li>
+                  <li>• 地址历史管理：记录变更轨迹和生活事件</li>
+                </ul>
+              </div>
+              <div class="border-l-3 border-earth-400 pl-4">
+                <h4 class="font-semibold text-earth-700 mb-2">有效性验证</h4>
+                <p class="text-sm text-gray-600 mb-2">格式校验、地图匹配、实体邮件验证等多种方式</p>
+                <ul class="text-xs text-gray-500 space-y-1">
+                  <li>• 成本与可信度平衡：格式校验（低）、邮件验证（高）</li>
+                  <li>• 实际配送结果反馈（最高可信度）</li>
+                  <li>• 第三方地址验证服务（企业客户批量验证）</li>
+                </ul>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Account System -->
+        <div class="bg-white rounded-16 p-8 border border-earth-200 shadow-sm">
+          <h3 class="font-serif text-2xl font-bold text-navy-800 mb-6">账户体系实体（Account）</h3>
+
+          <!-- Account Hierarchy Diagram -->
+          <div class="bg-white rounded-16 p-6 border border-earth-200 shadow-sm mb-8">
+            <h4 class="font-serif text-lg font-bold text-navy-800 mb-4 text-center">账户体系层次结构图</h4>
+            <div class="mermaid-container">
+              <div class="mermaid-controls">
+                <button class="mermaid-control-btn zoom-in" title="放大">
+                  <i class="fas fa-search-plus"></i>
+                </button>
+                <button class="mermaid-control-btn zoom-out" title="缩小">
+                  <i class="fas fa-search-minus"></i>
+                </button>
+                <button class="mermaid-control-btn reset-zoom" title="重置">
+                  <i class="fas fa-expand-arrows-alt"></i>
+                </button>
+                <button class="mermaid-control-btn fullscreen" title="全屏查看">
+                  <i class="fas fa-expand"></i>
+                </button>
+              </div>
+              <div class="mermaid">
+                graph TD
+                A[&#34;Account
+                <br/>账户基类&#34;] --&gt; B[&#34;FinancialAccount
+                <br/>金融账户&#34;]
+                A --&gt; C[&#34;EcommerceAccount
+                <br/>电商账户&#34;]
+
+                B --&gt; D[&#34;DepositAccount
+                <br/>存款账户&#34;]
+                B --&gt; E[&#34;CreditAccount
+                <br/>信贷账户&#34;]
+                B --&gt; F[&#34;InvestmentAccount
+                <br/>投资账户&#34;]
+
+                C --&gt; G[&#34;MemberAccount
+                <br/>会员账户&#34;]
+                C --&gt; H[&#34;VirtualWallet
+                <br/>虚拟钱包&#34;]
+                C --&gt; I[&#34;CouponAccount
+                <br/>优惠券账户&#34;]
+
+                D --&gt; J[&#34;SavingsAccount
+                <br/>储蓄账户&#34;]
+                D --&gt; K[&#34;CurrentAccount
+                <br/>活期账户&#34;]
+                D --&gt; L[&#34;FixedDepositAccount
+                <br/>定期账户&#34;]
+
+                E --&gt; M[&#34;CreditCardAccount
+                <br/>信用卡账户&#34;]
+                E --&gt; N[&#34;LoanAccount
+                <br/>贷款账户&#34;]
+                E --&gt; O[&#34;CreditLineAccount
+                <br/>授信账户&#34;]
+
+                F --&gt; P[&#34;SecuritiesAccount
+                <br/>证券账户&#34;]
+                F --&gt; Q[&#34;FundAccount
+                <br/>基金账户&#34;]
+                F --&gt; R[&#34;WealthManagementAccount
+                <br/>理财账户&#34;]
+
+                style A fill:#f0f4f8,stroke:#334e68,stroke-width:3px,color:#334e68
+                style B fill:#e8e4df,stroke:#5d5349,stroke-width:2px,color:#5d5349
+                style C fill:#e8e4df,stroke:#5d5349,stroke-width:2px,color:#5d5349
+                style D fill:#d9e2ec,stroke:#486581,stroke-width:2px,color:#486581
+                style E fill:#d9e2ec,stroke:#486581,stroke-width:2px,color:#486581
+                style F fill:#d9e2ec,stroke:#486581,stroke-width:2px,color:#486581
+                style G fill:#bcccdc,stroke:#334e68,stroke-width:2px,color:#334e68
+                style H fill:#bcccdc,stroke:#334e68,stroke-width:2px,color:#334e68
+                style I fill:#bcccdc,stroke:#334e68,stroke-width:2px,color:#334e68
+                style J fill:#c4b8a9,stroke:#726659,stroke-width:1px,color:#726659
+                style K fill:#c4b8a9,stroke:#726659,stroke-width:1px,color:#726659
+                style L fill:#c4b8a9,stroke:#726659,stroke-width:1px,color:#726659
+                style M fill:#c4b8a9,stroke:#726659,stroke-width:1px,color:#726659
+                style N fill:#c4b8a9,stroke:#726659,stroke-width:1px,color:#726659
+                style O fill:#c4b8a9,stroke:#726659,stroke-width:1px,color:#726659
+                style P fill:#c4b8a9,stroke:#726659,stroke-width:1px,color:#726659
+                style Q fill:#c4b8a9,stroke:#726659,stroke-width:1px,color:#726659
+                style R fill:#c4b8a9,stroke:#726659,stroke-width:1px,color:#726659
+              </div>
+            </div>
+            <p class="text-sm text-gray-600 mt-4 text-center">
+              图：账户体系层次结构，展示从基础账户到各类专业账户的继承关系
+            </p>
+          </div>
+
+          <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+            <div class="space-y-4">
+              <h4 class="font-serif text-lg font-bold text-navy-700">通用账户属性</h4>
+              <div class="bg-navy-50 p-4 rounded-lg">
+                <h5 class="font-semibold text-navy-800 mb-2">账户标识与类型</h5>
+                <p class="text-sm text-gray-600">account_id、account_type、balance等核心字段<a href="https://www.zoho.com.cn/crm/articles/core-elements16.html" class="citation-link">[1]</a>
+                </p>
+              </div>
+              <div class="bg-navy-50 p-4 rounded-lg">
+                <h5 class="font-semibold text-navy-800 mb-2">账户状态管理</h5>
+                <p class="text-sm text-gray-600">正常、冻结、注销、待激活等状态及状态流转规则</p>
+              </div>
+              <div class="bg-navy-50 p-4 rounded-lg">
+                <h5 class="font-semibold text-navy-800 mb-2">开户销户时间</h5>
+                <p class="text-sm text-gray-600">开户时间与销户时间的时间戳管理，支持生命周期分析</p>
+              </div>
+            </div>
+
+            <div class="space-y-4">
+              <h4 class="font-serif text-lg font-bold text-earth-700">金融账户扩展</h4>
+              <div class="bg-earth-50 p-4 rounded-lg">
+                <h5 class="font-semibold text-earth-800 mb-2">存款账户</h5>
+                <p class="text-sm text-gray-600">储蓄账户、活期账户、定期账户的计息规则和流动性特征</p>
+              </div>
+              <div class="bg-earth-50 p-4 rounded-lg">
+                <h5 class="font-semibold text-earth-800 mb-2">信贷账户</h5>
+                <p class="text-sm text-gray-600">信用卡账户、贷款账户的额度管理、计息规则和还款安排</p>
+              </div>
+              <div class="bg-earth-50 p-4 rounded-lg">
+                <h5 class="font-semibold text-earth-800 mb-2">投资账户</h5>
+                <p class="text-sm text-gray-600">证券账户、基金账户、理财账户的资产估值和交易清算</p>
+              </div>
+            </div>
+
+            <div class="space-y-4">
+              <h4 class="font-serif text-lg font-bold text-earth-700">电商账户扩展</h4>
+              <div class="bg-earth-50 p-4 rounded-lg">
+                <h5 class="font-semibold text-earth-800 mb-2">会员等级与积分</h5>
+                <p class="text-sm text-gray-600">会员等级体系、积分获取消耗规则、有效期管理</p>
+              </div>
+              <div class="bg-earth-50 p-4 rounded-lg">
+                <h5 class="font-semibold text-earth-800 mb-2">虚拟账户与钱包</h5>
+                <p class="text-sm text-gray-600">虚拟钱包余额、充值提现、转账消费、合规限额管理</p>
+              </div>
+              <div class="bg-earth-50 p-4 rounded-lg">
+                <h5 class="font-semibold text-earth-800 mb-2">优惠券与权益</h5>
+                <p class="text-sm text-gray-600">满减券、折扣券、免邮券等权益的生命周期管理</p>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- Transaction &amp; Behavioral Data -->
+      <section id="transaction-behavior" class="mb-16">
+        <h2 class="font-serif text-3xl font-bold text-navy-800 mb-8">交易与行为数据模型</h2>
+
+        <div class="grid grid-cols-1 lg:grid-cols-3 gap-8 mb-8">
+          <!-- Transaction Records -->
+          <div class="bg-white rounded-16 p-6 border border-earth-200 shadow-sm">
+            <h3 class="font-serif text-xl font-bold text-navy-800 mb-4">
+              <i class="fas fa-exchange-alt text-navy-500 mr-3"></i>
+              交易记录实体
+            </h3>
+            <div class="space-y-4">
+              <div class="border-l-3 border-navy-400 pl-4">
+                <h4 class="font-semibold text-navy-700 mb-2">交易基础信息</h4>
+                <p class="text-sm text-gray-600 mb-2">交易唯一标识、时间戳、金额、币种、交易对手</p>
+                <ul class="text-xs text-gray-500 space-y-1">
+                  <li>• 分布式ID生成保证高并发唯一性</li>
+                  <li>• 精确到毫秒的时间戳支持去重</li>
+                  <li>• ISO 4217标准币种代码管理</li>
+                </ul>
+              </div>
+              <div class="border-l-3 border-navy-400 pl-4">
+                <h4 class="font-semibold text-navy-700 mb-2">金融交易特性</h4>
+                <p class="text-sm text-gray-600 mb-2">转账、支付、理财、还款等多种交易类型</p>
+                <ul class="text-xs text-gray-500 space-y-1">
+                  <li>• 大额交易、可疑交易风险标记</li>
+                  <li>• 交易对手风险评级整合</li>
+                  <li>• 完整的决策审计链路</li>
+                </ul>
+              </div>
+              <div class="border-l-3 border-navy-400 pl-4">
+                <h4 class="font-semibold text-navy-700 mb-2">电商交易特性</h4>
+                <p class="text-sm text-gray-600 mb-2">订单关联、商品明细、物流状态、评价反馈</p>
+                <ul class="text-xs text-gray-500 space-y-1">
+                  <li>• 交易-订单-商品完整关联链</li>
+                  <li>• 运费、税费、优惠金额拆分</li>
+                  <li>• 订单行项目与SKU信息快照</li>
+                </ul>
+              </div>
+            </div>
+          </div>
+
+          <!-- Order Entity -->
+          <div class="bg-white rounded-16 p-6 border border-earth-200 shadow-sm">
+            <h3 class="font-serif text-xl font-bold text-earth-800 mb-4">
+              <i class="fas fa-shopping-bag text-earth-500 mr-3"></i>
+              订单实体
+            </h3>
+            <div class="space-y-4">
+              <div class="border-l-3 border-earth-400 pl-4">
+                <h4 class="font-semibold text-earth-700 mb-2">订单主数据</h4>
+                <p class="text-sm text-gray-600 mb-2">订单编号、下单时间、订单状态机管理</p>
+                <ul class="text-xs text-gray-500 space-y-1">
+                  <li>• 有意义的编码规则支持分库分表</li>
+                  <li>• 待付款、已付款、已发货等状态流转</li>
+                  <li>• 订单金额拆分与优惠券分摊规则</li>
+                </ul>
+              </div>
+              <div class="border-l-3 border-earth-400 pl-4">
+                <h4 class="font-semibold text-earth-700 mb-2">订单行项目</h4>
+                <p class="text-sm text-gray-600 mb-2">商品/服务标识、SKU信息、数量单价</p>
+                <ul class="text-xs text-gray-500 space-y-1">
+                  <li>• SKU编码、SPU编码、规格属性</li>
+                  <li>• 商品名称与主图快照避免变更纠纷</li>
+                  <li>• 发货与退货记录跟踪</li>
+                </ul>
+              </div>
+              <div class="border-l-3 border-earth-400 pl-4">
+                <h4 class="font-semibold text-earth-700 mb-2">支付信息</h4>
+                <p class="text-sm text-gray-600 mb-2">支付方式、支付流水、支付状态管理</p>
+                <ul class="text-xs text-gray-500 space-y-1">
+                  <li>• 支付宝、微信、银行卡等支付方式</li>
+                  <li>• 第三方支付平台交易号对账</li>
+                  <li>• 分次支付与组合支付支持</li>
+                </ul>
+              </div>
+            </div>
+          </div>
+
+          <!-- Behavioral Events -->
+          <div class="bg-white rounded-16 p-6 border border-earth-200 shadow-sm">
+            <h3 class="font-serif text-xl font-bold text-navy-800 mb-4">
+              <i class="fas fa-mouse-pointer text-navy-500 mr-3"></i>
+              行为追踪实体
+            </h3>
+            <div class="space-y-4">
+              <div class="border-l-3 border-navy-400 pl-4">
+                <h4 class="font-semibold text-navy-700 mb-2">线上行为数据</h4>
+                <p class="text-sm text-gray-600 mb-2">页面浏览、点击流、搜索、加购行为</p>
+                <ul class="text-xs text-gray-500 space-y-1">
+                  <li>• 页面浏览路径、停留时长分析</li>
+                  <li>• 搜索关键词、筛选条件、结果点击</li>
+                  <li>• 会话管理与跳出率计算</li>
+                </ul>
+              </div>
+              <div class="border-l-3 border-navy-400 pl-4">
+                <h4 class="font-semibold text-navy-700 mb-2">线下行为数据</h4>
+                <p class="text-sm text-gray-600 mb-2">网点到访、客服交互、活动参与记录</p>
+                <ul class="text-xs text-gray-500 space-y-1">
+                  <li>• 网点到访时间、办理业务类型</li>
+                  <li>• 客服交互渠道、问题分类、满意度</li>
+                  <li>• 线上线下活动参与记录</li>
+                </ul>
+              </div>
+              <div class="border-l-3 border-navy-400 pl-4">
+                <h4 class="font-semibold text-navy-700 mb-2">实时特征计算</h4>
+                <p class="text-sm text-gray-600 mb-2">滑动窗口聚合、事件序列模式识别</p>
+                <ul class="text-xs text-gray-500 space-y-1">
+                  <li>• 近1小时、近24小时行为统计</li>
+                  <li>• 复杂事件处理（CEP）模式识别</li>
+                  <li>• 机器学习模型在线推理</li>
+                </ul>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- Risk &amp; Compliance -->
+      <section id="risk-compliance" class="mb-16">
+        <h2 class="font-serif text-3xl font-bold text-navy-800 mb-8">风险与合规数据模型</h2>
+
+        <div class="grid grid-cols-1 lg:grid-cols-2 gap-8 mb-8">
+          <!-- Risk Assessment -->
+          <div class="bg-white rounded-16 p-6 border border-earth-200 shadow-sm">
+            <h3 class="font-serif text-xl font-bold text-red-700 mb-4">
+              <i class="fas fa-shield-alt text-red-500 mr-3"></i>
+              客户风险评估实体
+            </h3>
+            <div class="space-y-4">
+              <div class="border-l-3 border-red-400 pl-4">
+                <h4 class="font-semibold text-red-700 mb-2">KYC信息</h4>
+                <p class="text-sm text-gray-600 mb-2">身份验证等级、验证历史、受益所有人识别</p>
+                <ul class="text-xs text-gray-500 space-y-1">
+                  <li>• L0-L4多级验证等级管理</li>
+                  <li>• 企业客户UBO穿透识别</li>
+                  <li>• PEP筛查结果与关联关系</li>
+                </ul>
+              </div>
+              <div class="border-l-3 border-red-400 pl-4">
+                <h4 class="font-semibold text-red-700 mb-2">反洗钱监测</h4>
+                <p class="text-sm text-gray-600 mb-2">可疑交易报告、客户风险等级、名单监控</p>
+                <ul class="text-xs text-gray-500 space-y-1">
+                  <li>• STR记录与监管机构反馈</li>
+                  <li>• 低/中/高风险动态分类</li>
+                  <li>• 制裁名单、恐怖分子名单实时比对</li>
+                </ul>
+              </div>
+              <div class="border-l-3 border-red-400 pl-4">
+                <h4 class="font-semibold text-red-700 mb-2">信用评估</h4>
+                <p class="text-sm text-gray-600 mb-2">内部评分模型、外部征信整合、违约概率</p>
+                <ul class="text-xs text-gray-500 space-y-1">
+                  <li>• 申请评分卡、行为评分卡、催收评分卡</li>
+                  <li>• 央行征信、百行征信数据整合</li>
+                  <li>• PD、LGD、EAD风险指标计算</li>
+                </ul>
+              </div>
+            </div>
+          </div>
+
+          <!-- Compliance Audit -->
+          <div class="bg-white rounded-16 p-6 border border-earth-200 shadow-sm">
+            <h3 class="font-serif text-xl font-bold text-green-700 mb-4">
+              <i class="fas fa-gavel text-green-500 mr-3"></i>
+              合规审计实体
+            </h3>
+            <div class="space-y-4">
+              <div class="border-l-3 border-green-400 pl-4">
+                <h4 class="font-semibold text-green-700 mb-2">数据授权与同意</h4>
+                <p class="text-sm text-gray-600 mb-2">隐私政策同意、营销授权、数据共享授权</p>
+                <ul class="text-xs text-gray-500 space-y-1">
+                  <li>• 同意版本、时间、方式、范围记录<a href="https://developer.salesforce.com/docs/data/data-cloud-dmo-mapping/guide/c360dm-datamodelobjects.html" class="citation-link">[54]</a>
+                  </li>
+                  <li>• 营销渠道、内容、频率、时效管理</li>
+                  <li>• 数据共享场景、接收方、范围授权</li>
+                </ul>
+              </div>
+              <div class="border-l-3 border-green-400 pl-4">
+                <h4 class="font-semibold text-green-700 mb-2">数据操作审计</h4>
+                <p class="text-sm text-gray-600 mb-2">信息变更历史、数据访问日志、删除匿名化</p>
+                <ul class="text-xs text-gray-500 space-y-1">
+                  <li>• 变更时间、字段、前后值、操作人记录</li>
+                  <li>• 访问时间、对象、类型、目的监控</li>
+                  <li>• 被遗忘权实现与法定保留期限管理</li>
+                </ul>
+              </div>
+              <div class="border-l-3 border-green-400 pl-4">
+                <h4 class="font-semibold text-green-700 mb-2">监管报送</h4>
+                <p class="text-sm text-gray-600 mb-2">反洗钱报告、征信报送、统计报表</p>
+                <ul class="text-xs text-gray-500 space-y-1">
+                  <li>• 大额交易、可疑交易报告自动化</li>
+                  <li>• 征信数据定期报送与质量校验</li>
+                  <li>• 监管要求的统计指标计算</li>
+                </ul>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Compliance Technology -->
+        <div class="bg-white rounded-16 p-8 border border-earth-200 shadow-sm">
+          <h3 class="font-serif text-2xl font-bold text-navy-800 mb-6">合规技术支撑</h3>
+
+          <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+            <div class="bg-gradient-to-br from-red-50 to-red-100 p-6 rounded-lg">
+              <div class="flex items-center mb-4">
+                <i class="fas fa-user-shield text-red-600 text-2xl mr-3"></i>
+                <h4 class="font-serif text-lg font-bold text-red-800">KYC/AML技术</h4>
+              </div>
+              <p class="text-sm text-gray-700 mb-3">多层次身份验证与反洗钱监测技术</p>
+              <ul class="text-xs text-gray-600 space-y-1">
+                <li>• 身份证OCR+人脸识别+Liveness检测</li>
+                <li>• 企业工商信息核验+受益所有人穿透</li>
+                <li>• 规则引擎+机器学习可疑交易识别</li>
+                <li>• 制裁名单实时比对与预警</li>
+              </ul>
+            </div>
+
+            <div class="bg-gradient-to-br from-green-50 to-green-100 p-6 rounded-lg">
+              <div class="flex items-center mb-4">
+                <i class="fas fa-lock text-green-600 text-2xl mr-3"></i>
+                <h4 class="font-serif text-lg font-bold text-green-800">隐私计算技术</h4>
+              </div>
+              <p class="text-sm text-gray-700 mb-3">保障数据安全与合规的技术方案</p>
+              <ul class="text-xs text-gray-600 space-y-1">
+                <li>• 敏感数据AES-256加密与HSM托管</li>
+                <li>• 联邦学习跨机构联合建模<a href="https://www.chinaifs.org.cn/upload/1/editor/1730241595606.pdf" class="citation-link">[58]</a>
+                </li>
+                <li>• 多方安全计算（MPC）联合统计</li>
+                <li>• 可信执行环境（TEE）硬件隔离</li>
+              </ul>
+            </div>
+
+            <div class="bg-gradient-to-br from-blue-50 to-blue-100 p-6 rounded-lg">
+              <div class="flex items-center mb-4">
+                <i class="fas fa-clipboard-check text-blue-600 text-2xl mr-3"></i>
+                <h4 class="font-serif text-lg font-bold text-blue-800">审计追踪技术</h4>
+              </div>
+              <p class="text-sm text-gray-700 mb-3">完整的数据操作记录与合规审计</p>
+              <ul class="text-xs text-gray-600 space-y-1">
+                <li>• 区块链式不可篡改变更日志</li>
+                <li>• 敏感操作多方确认与授权</li>
+                <li>• 数据血缘追踪与影响分析</li>
+                <li>• 自动化合规报告生成</li>
+              </ul>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- Personalization &amp; Marketing -->
+      <section id="personalization" class="mb-16">
+        <h2 class="font-serif text-3xl font-bold text-navy-800 mb-8">个性化与营销数据模型</h2>
+
+        <div class="grid grid-cols-1 lg:grid-cols-3 gap-8 mb-8">
+          <!-- Customer Tags -->
+          <div class="bg-white rounded-16 p-6 border border-earth-200 shadow-sm">
+            <h3 class="font-serif text-xl font-bold text-purple-700 mb-4">
+              <i class="fas fa-tags text-purple-500 mr-3"></i>
+              客户标签体系
+            </h3>
+            <div class="space-y-4">
+              <div class="border-l-3 border-purple-400 pl-4">
+                <h4 class="font-semibold text-purple-700 mb-2">标签分类架构</h4>
+                <p class="text-sm text-gray-600 mb-2">人口统计、行为特征、价值分层三大类别</p>
+                <ul class="text-xs text-gray-500 space-y-1">
+                  <li>• 年龄层、地域、职业、家庭结构</li>
+                  <li>• 购买频次、客单价、品类偏好、促销响应</li>
+                  <li>• RFM模型、LTV预测、流失预警</li>
+                </ul>
+              </div>
+              <div class="border-l-3 border-purple-400 pl-4">
+                <h4 class="font-semibold text-purple-700 mb-2">标签管理机制</h4>
+                <p class="text-sm text-gray-600 mb-2">自动生成规则、有效期管理、冲突解决</p>
+                <ul class="text-xs text-gray-500 space-y-1">
+                  <li>• 统计规则、行为规则、模型规则</li>
+                  <li>• 实时、短期、中期、长期、永久标签</li>
+                  <li>• 标签冲突优先级与版本管理</li>
+                </ul>
+              </div>
+              <div class="border-l-3 border-purple-400 pl-4">
+                <h4 class="font-semibold text-purple-700 mb-2">标签应用场景</h4>
+                <p class="text-sm text-gray-600 mb-2">精准营销、客户分层、个性化推荐</p>
+                <ul class="text-xs text-gray-500 space-y-1">
+                  <li>• 高价值客户识别与维护</li>
+                  <li>• 沉睡客户唤醒策略制定</li>
+                  <li>• 新品推广目标人群筛选</li>
+                </ul>
+              </div>
+            </div>
+          </div>
+
+          <!-- Customer Preferences -->
+          <div class="bg-white rounded-16 p-6 border border-earth-200 shadow-sm">
+            <h3 class="font-serif text-xl font-bold text-indigo-700 mb-4">
+              <i class="fas fa-heart text-indigo-500 mr-3"></i>
+              客户偏好实体
+            </h3>
+            <div class="space-y-4">
+              <div class="border-l-3 border-indigo-400 pl-4">
+                <h4 class="font-semibold text-indigo-700 mb-2">产品与服务偏好</h4>
+                <p class="text-sm text-gray-600 mb-2">品类偏好、品牌偏好、价格敏感度</p>
+                <ul class="text-xs text-gray-500 space-y-1">
+                  <li>• Top N品类及偏好权重排序</li>
+                  <li>• 品牌忠诚度与切换频率分析</li>
+                  <li>• 价格带偏好与价格弹性计算</li>
+                </ul>
+              </div>
+              <div class="border-l-3 border-indigo-400 pl-4">
+                <h4 class="font-semibold text-indigo-700 mb-2">交互偏好</h4>
+                <p class="text-sm text-gray-600 mb-2">沟通时段、内容形式、渠道偏好</p>
+                <ul class="text-xs text-gray-500 space-y-1">
+                  <li>• 工作日白天、晚间、周末时段偏好</li>
+                  <li>• 图文、视频、直播内容形式偏好</li>
+                  <li>• APP、小程序、网页、线下渠道偏好</li>
+                </ul>
+              </div>
+              <div class="border-l-3 border-indigo-400 pl-4">
+                <h4 class="font-semibold text-indigo-700 mb-2">促销响应偏好</h4>
+                <p class="text-sm text-gray-600 mb-2">折扣型、满减型、赠品型、抽奖型响应</p>
+                <ul class="text-xs text-gray-500 space-y-1">
+                  <li>• 促销敏感度分级与策略匹配</li>
+                  <li>• 响应时效性与转化效率分析</li>
+                  <li>• 会员专享权益感知与价值认同</li>
+                </ul>
+              </div>
+            </div>
+          </div>
+
+          <!-- Marketing Interactions -->
+          <div class="bg-white rounded-16 p-6 border border-earth-200 shadow-sm">
+            <h3 class="font-serif text-xl font-bold text-pink-700 mb-4">
+              <i class="fas fa-bullhorn text-pink-500 mr-3"></i>
+              营销互动记录
+            </h3>
+            <div class="space-y-4">
+              <div class="border-l-3 border-pink-400 pl-4">
+                <h4 class="font-semibold text-pink-700 mb-2">触达记录</h4>
+                <p class="text-sm text-gray-600 mb-2">推送消息、邮件营销、短信电话外呼</p>
+                <ul class="text-xs text-gray-500 space-y-1">
+                  <li>• 发送成功率、到达率、打开率统计</li>
+                  <li>• 点击率、转化率、退订率监控</li>
+                  <li>• 发送时段、频率、内容效果分析</li>
+                </ul>
+              </div>
+              <div class="border-l-3 border-pink-400 pl-4">
+                <h4 class="font-semibold text-pink-700 mb-2">活动参与</h4>
+                <p class="text-sm text-gray-600 mb-2">优惠券领取使用、积分兑换、会员活动</p>
+                <ul class="text-xs text-gray-500 space-y-1">
+                  <li>• 优惠券生命周期与ROI计算</li>
+                  <li>• 积分消耗策略与价值评估</li>
+                  <li>• 线上线下活动参与度与转化分析</li>
+                </ul>
+              </div>
+              <div class="border-l-3 border-pink-400 pl-4">
+                <h4 class="font-semibold text-pink-700 mb-2">效果评估</h4>
+                <p class="text-sm text-gray-600 mb-2">营销活动ROI、客户生命周期价值提升</p>
+                <ul class="text-xs text-gray-500 space-y-1">
+                  <li>• 营销活动投入产出比计算</li>
+                  <li>• 客户活跃度与忠诚度提升度量</li>
+                  <li>• 个性化推荐准确率与满意度</li>
+                </ul>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Personalization Technology -->
+        <div class="bg-white rounded-16 p-8 border border-earth-200 shadow-sm">
+          <h3 class="font-serif text-2xl font-bold text-navy-800 mb-6">个性化技术支撑</h3>
+
+          <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
+            <div class="space-y-6">
+              <div class="bg-gradient-to-br from-purple-50 to-purple-100 p-6 rounded-lg">
+                <h4 class="font-serif text-lg font-bold text-purple-800 mb-4">
+                  <i class="fas fa-brain text-purple-600 mr-3"></i>
+                  智能推荐引擎
+                </h4>
+                <div class="space-y-3">
+                  <div class="flex items-start space-x-3">
+                    <div class="w-2 h-2 bg-purple-400 rounded-full mt-2"></div>
+                    <div>
+                      <h5 class="font-semibold text-purple-700 mb-1">协同过滤算法</h5>
+                      <p class="text-sm text-gray-600">基于用户相似性和物品相似性的推荐</p>
+                    </div>
+                  </div>
+                  <div class="flex items-start space-x-3">
+                    <div class="w-2 h-2 bg-purple-400 rounded-full mt-2"></div>
+                    <div>
+                      <h5 class="font-semibold text-purple-700 mb-1">内容-based推荐</h5>
+                      <p class="text-sm text-gray-600">基于商品属性和用户偏好的匹配</p>
+                    </div>
+                  </div>
+                  <div class="flex items-start space-x-3">
+                    <div class="w-2 h-2 bg-purple-400 rounded-full mt-2"></div>
+                    <div>
+                      <h5 class="font-semibold text-purple-700 mb-1">深度学习模型</h5>
+                      <p class="text-sm text-gray-600">神经网络捕捉复杂用户行为模式</p>
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              <div class="bg-gradient-to-br from-indigo-50 to-indigo-100 p-6 rounded-lg">
+                <h4 class="font-serif text-lg font-bold text-indigo-800 mb-4">
+                  <i class="fas fa-chart-line text-indigo-600 mr-3"></i>
+                  实时决策引擎
+                </h4>
+                <div class="space-y-3">
+                  <div class="flex items-start space-x-3">
+                    <div class="w-2 h-2 bg-indigo-400 rounded-full mt-2"></div>
+                    <div>
+                      <h5 class="font-semibold text-indigo-700 mb-1">规则引擎</h5>
+                      <p class="text-sm text-gray-600">业务规则与风控规则的实时执行</p>
+                    </div>
+                  </div>
+                  <div class="flex items-start space-x-3">
+                    <div class="w-2 h-2 bg-indigo-400 rounded-full mt-2"></div>
+                    <div>
+                      <h5 class="font-semibold text-indigo-700 mb-1">特征计算</h5>
+                      <p class="text-sm text-gray-600">实时特征提取与模型预测</p>
+                    </div>
+                  </div>
+                  <div class="flex items-start space-x-3">
+                    <div class="w-2 h-2 bg-indigo-400 rounded-full mt-2"></div>
+                    <div>
+                      <h5 class="font-semibold text-indigo-700 mb-1">A/B测试</h5>
+                      <p class="text-sm text-gray-600">策略效果对比与优化</p>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <div class="space-y-6">
+              <div class="bg-gradient-to-br from-pink-50 to-pink-100 p-6 rounded-lg">
+                <h4 class="font-serif text-lg font-bold text-pink-800 mb-4">
+                  <i class="fas fa-users text-pink-600 mr-3"></i>
+                  客户分群技术
+                </h4>
+                <div class="space-y-3">
+                  <div class="flex items-start space-x-3">
+                    <div class="w-2 h-2 bg-pink-400 rounded-full mt-2"></div>
+                    <div>
+                      <h5 class="font-semibold text-pink-700 mb-1">聚类算法</h5>
+                      <p class="text-sm text-gray-600">K-means、DBSCAN等无监督学习分群</p>
+                    </div>
+                  </div>
+                  <div class="flex items-start space-x-3">
+                    <div class="w-2 h-2 bg-pink-400 rounded-full mt-2"></div>
+                    <div>
+                      <h5 class="font-semibold text-pink-700 mb-1">决策树分群</h5>
+                      <p class="text-sm text-gray-600">基于业务规则的可解释分群</p>
+                    </div>
+                  </div>
+                  <div class="flex items-start space-x-3">
+                    <div class="w-2 h-2 bg-pink-400 rounded-full mt-2"></div>
+                    <div>
+                      <h5 class="font-semibold text-pink-700 mb-1">生命周期分群</h5>
+                      <p class="text-sm text-gray-600">基于客户旅程的动态分群</p>
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              <div class="bg-gradient-to-br from-blue-50 to-blue-100 p-6 rounded-lg">
+                <h4 class="font-serif text-lg font-bold text-blue-800 mb-4">
+                  <i class="fas fa-cogs text-blue-600 mr-3"></i>
+                  营销自动化
+                </h4>
+                <div class="space-y-3">
+                  <div class="flex items-start space-x-3">
+                    <div class="w-2 h-2 bg-blue-400 rounded-full mt-2"></div>
+                    <div>
+                      <h5 class="font-semibold text-blue-700 mb-1">触发式营销</h5>
+                      <p class="text-sm text-gray-600">基于行为的实时营销触发</p>
+                    </div>
+                  </div>
+                  <div class="flex items-start space-x-3">
+                    <div class="w-2 h-2 bg-blue-400 rounded-full mt-2"></div>
+                    <div>
+                      <h5 class="font-semibold text-blue-700 mb-1">生命周期营销</h5>
+                      <p class="text-sm text-gray-600">基于客户生命周期的 nurturing</p>
+                    </div>
+                  </div>
+                  <div class="flex items-start space-x-3">
+                    <div class="w-2 h-2 bg-blue-400 rounded-full mt-2"></div>
+                    <div>
+                      <h5 class="font-semibold text-blue-700 mb-1">智能触达</h5>
+                      <p class="text-sm text-gray-600">最优渠道、时机、内容的智能选择</p>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- Relationship Network -->
+      <section id="relationship-network" class="mb-16">
+        <h2 class="font-serif text-3xl font-bold text-navy-800 mb-8">关系网络数据模型</h2>
+
+        <!-- Relationship Network Diagram -->
+        <div class="bg-white rounded-16 p-6 border border-earth-200 shadow-sm mb-8">
+          <h3 class="font-serif text-xl font-bold text-navy-800 mb-4 text-center">客户关系网络图谱</h3>
+          <div class="mermaid-container">
+            <div class="mermaid-controls">
+              <button class="mermaid-control-btn zoom-in" title="放大">
+                <i class="fas fa-search-plus"></i>
+              </button>
+              <button class="mermaid-control-btn zoom-out" title="缩小">
+                <i class="fas fa-search-minus"></i>
+              </button>
+              <button class="mermaid-control-btn reset-zoom" title="重置">
+                <i class="fas fa-expand-arrows-alt"></i>
+              </button>
+              <button class="mermaid-control-btn fullscreen" title="全屏查看">
+                <i class="fas fa-expand"></i>
+              </button>
+            </div>
+            <div class="mermaid">
+              graph LR
+              A[&#34;个人客户 A&#34;] --&gt;|家庭成员| B[&#34;个人客户 B&#34;]
+              A --&gt;|同事关系| C[&#34;个人客户 C&#34;]
+              A --&gt;|担保关系| D[&#34;企业客户 X&#34;]
+              B --&gt;|共同账户| E[&#34;企业客户 Y&#34;]
+              C --&gt;|投资关系| F[&#34;企业客户 Z&#34;]
+              D --&gt;|控股关系| E
+              E --&gt;|供应链| F
+              F --&gt;|竞争对手| D
+
+              G[&#34;个人客户 D&#34;] --&gt;|邀请裂变| A
+              G --&gt;|社交分享| B
+              H[&#34;个人客户 E&#34;] --&gt;|家庭关系| G
+              H --&gt;|业务伙伴| C
+
+              I[&#34;企业客户 W&#34;] --&gt;|上下游| D
+              I --&gt;|合作关系| E
+
+              style A fill:#f0f4f8,stroke:#334e68,stroke-width:2px,color:#334e68
+              style B fill:#f0f4f8,stroke:#334e68,stroke-width:2px,color:#334e68
+              style C fill:#f0f4f8,stroke:#334e68,stroke-width:2px,color:#334e68
+              style D fill:#e8e4df,stroke:#5d5349,stroke-width:2px,color:#5d5349
+              style E fill:#e8e4df,stroke:#5d5349,stroke-width:2px,color:#5d5349
+              style F fill:#e8e4df,stroke:#5d5349,stroke-width:2px,color:#5d5349
+              style G fill:#f0f4f8,stroke:#334e68,stroke-width:2px,color:#334e68
+              style H fill:#f0f4f8,stroke:#334e68,stroke-width:2px,color:#334e68
+              style I fill:#e8e4df,stroke:#5d5349,stroke-width:2px,color:#5d5349
+
+              linkStyle 0 stroke:#486581,stroke-width:2px
+              linkStyle 1 stroke:#486581,stroke-width:2px
+              linkStyle 2 stroke:#486581,stroke-width:2px
+              linkStyle 3 stroke:#5d5349,stroke-width:2px
+              linkStyle 4 stroke:#5d5349,stroke-width:2px
+              linkStyle 5 stroke:#5d5349,stroke-width:2px
+              linkStyle 6 stroke:#5d5349,stroke-width:2px
+              linkStyle 7 stroke:#5d5349,stroke-width:2px
+              linkStyle 8 stroke:#5d5349,stroke-width:2px
+              linkStyle 9 stroke:#486581,stroke-width:2px
+              linkStyle 10 stroke:#486581,stroke-width:2px
+              linkStyle 11 stroke:#486581,stroke-width:2px
+              linkStyle 12 stroke:#5d5349,stroke-width:2px
+              linkStyle 13 stroke:#5d5349,stroke-width:2px
+            </div>
+          </div>
+          <p class="text-sm text-gray-600 mt-4 text-center">
+            图：客户关系网络图谱，展示个人客户间的社交关系与企业客户间的商业关系
+          </p>
+        </div>
+
+        <div class="grid grid-cols-1 lg:grid-cols-2 gap-8 mb-8">
+          <!-- Customer Relationship Graph -->
+          <div class="bg-white rounded-16 p-6 border border-earth-200 shadow-sm">
+            <h3 class="font-serif text-xl font-bold text-navy-800 mb-4">
+              <i class="fas fa-project-diagram text-navy-500 mr-3"></i>
+              客户关系图谱
+            </h3>
+            <div class="space-y-4">
+              <div class="border-l-3 border-navy-400 pl-4">
+                <h4 class="font-semibold text-navy-700 mb-2">社交关系</h4>
+                <p class="text-sm text-gray-600 mb-2">邀请关系、家庭关系、同事与业务伙伴关系</p>
+                <ul class="text-xs text-gray-500 space-y-1">
+                  <li>• 邀请裂变链路追踪与奖励计算</li>
+                  <li>• 家庭成员关系验证与家庭金融产品</li>
+                  <li>• 同事关系识别与B2B营销机会</li>
+                </ul>
+              </div>
+              <div class="border-l-3 border-navy-400 pl-4">
+                <h4 class="font-semibold text-navy-700 mb-2">资金关系</h4>
+                <p class="text-sm text-gray-600 mb-2">担保关系、共同账户、资金往来网络</p>
+                <ul class="text-xs text-gray-500 space-y-1">
+                  <li>• 担保链分析与风险传导</li>
+                  <li>• 共同账户权限管理与纠纷处理</li>
+                  <li>• 资金网络中心性与异常模式检测</li>
+                </ul>
+              </div>
+              <div class="border-l-3 border-navy-400 pl-4">
+                <h4 class="font-semibold text-navy-700 mb-2">关系分析技术</h4>
+                <p class="text-sm text-gray-600 mb-2">图数据库、社交网络分析、社区发现</p>
+                <ul class="text-xs text-gray-500 space-y-1">
+                  <li>• Neo4j、TigerGraph等图数据库存储</li>
+                  <li>• PageRank中心性计算与影响力分析</li>
+                  <li>• Louvain算法社区发现与团伙识别</li>
+                </ul>
+              </div>
+            </div>
+          </div>
+
+          <!-- Organization Relationships -->
+          <div class="bg-white rounded-16 p-6 border border-earth-200 shadow-sm">
+            <h3 class="font-serif text-xl font-bold text-earth-800 mb-4">
+              <i class="fas fa-building text-earth-500 mr-3"></i>
+              企业关联关系
+            </h3>
+            <div class="space-y-4">
+              <div class="border-l-3 border-earth-400 pl-4">
+                <h4 class="font-semibold text-earth-700 mb-2">股权关系</h4>
+                <p class="text-sm text-gray-600 mb-2">控股与被控股、最终受益所有人识别</p>
+                <ul class="text-xs text-gray-500 space-y-1">
+                  <li>• 多层股权穿透与控制权计算</li>
+                  <li>• 协议控制（VIE）架构识别</li>
+                  <li>• 一致行动人合并计算</li>
+                </ul>
+              </div>
+              <div class="border-l-3 border-earth-400 pl-4">
+                <h4 class="font-semibold text-earth-700 mb-2">交易关系</h4>
+                <p class="text-sm text-gray-600 mb-2">上下游供应链、竞争对手关系</p>
+                <ul class="text-xs text-gray-500 space-y-1">
+                  <li>• 采购销售匹配与供应链融资</li>
+                  <li>• 行业地位与议价能力评估</li>
+                  <li>• 竞争对手关系识别与风险提示</li>
+                </ul>
+              </div>
+              <div class="border-l-3 border-earth-400 pl-4">
+                <h4 class="font-semibold text-earth-700 mb-2">风险传导分析</h4>
+                <p class="text-sm text-gray-600 mb-2">集团风险、行业风险、区域风险</p>
+                <ul class="text-xs text-gray-500 space-y-1">
+                  <li>• 担保链风险传导路径分析</li>
+                  <li>• 行业周期性风险预警</li>
+                  <li>• 区域经济状况影响评估</li>
+                </ul>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Relationship Analysis -->
+        <div class="bg-white rounded-16 p-8 border border-earth-200 shadow-sm">
+          <h3 class="font-serif text-2xl font-bold text-navy-800 mb-6">关系网络分析应用</h3>
+
+          <div class="grid grid-cols-1 md:grid-cols-4 gap-6">
+            <div class="bg-gradient-to-br from-blue-50 to-blue-100 p-6 rounded-lg text-center">
+              <i class="fas fa-search text-blue-600 text-3xl mb-4"></i>
+              <h4 class="font-serif text-lg font-bold text-blue-800 mb-2">欺诈识别</h4>
+              <p class="text-sm text-gray-600">通过关系网络分析识别团伙欺诈、关联交易、虚假交易等风险模式</p>
+            </div>
+
+            <div class="bg-gradient-to-br from-green-50 to-green-100 p-6 rounded-lg text-center">
+              <i class="fas fa-handshake text-green-600 text-3xl mb-4"></i>
+              <h4 class="font-serif text-lg font-bold text-green-800 mb-2">交叉销售</h4>
+              <p class="text-sm text-gray-600">基于关系链推荐相关产品，挖掘家庭金融、企业金融等交叉销售机会</p>
+            </div>
+
+            <div class="bg-gradient-to-br from-purple-50 to-purple-100 p-6 rounded-lg text-center">
+              <i class="fas fa-share-alt text-purple-600 text-3xl mb-4"></i>
+              <h4 class="font-serif text-lg font-bold text-purple-800 mb-2">社交裂变</h4>
+              <p class="text-sm text-gray-600">利用社交网络进行病毒式营销，设计邀请奖励机制和客户获取策略</p>
+            </div>
+
+            <div class="bg-gradient-to-br from-orange-50 to-orange-100 p-6 rounded-lg text-center">
+              <i class="fas fa-shield-alt text-orange-600 text-3xl mb-4"></i>
+              <h4 class="font-serif text-lg font-bold text-orange-800 mb-2">风险防控</h4>
+              <p class="text-sm text-gray-600">监控担保链风险传导，识别高风险客户群体，预警系统性风险</p>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- Implementation Architecture -->
+      <section id="implementation" class="mb-16">
+        <h2 class="font-serif text-3xl font-bold text-navy-800 mb-8">数据模型实现架构</h2>
+
+        <!-- Layered Architecture -->
+        <div class="bg-white rounded-16 p-6 border border-earth-200 shadow-sm mb-8">
+          <h3 class="font-serif text-xl font-bold text-navy-800 mb-4 text-center">分层数据架构设计</h3>
+          <div class="mermaid-container">
+            <div class="mermaid-controls">
+              <button class="mermaid-control-btn zoom-in" title="放大">
+                <i class="fas fa-search-plus"></i>
+              </button>
+              <button class="mermaid-control-btn zoom-out" title="缩小">
+                <i class="fas fa-search-minus"></i>
+              </button>
+              <button class="mermaid-control-btn reset-zoom" title="重置">
+                <i class="fas fa-expand-arrows-alt"></i>
+              </button>
+              <button class="mermaid-control-btn fullscreen" title="全屏查看">
+                <i class="fas fa-expand"></i>
+              </button>
+            </div>
+            <div class="mermaid">
+              graph TB
+              subgraph &#34;数据源层&#34;
+              A1[&#34;电商APP&#34;] --&gt; B1[&#34;消息队列&#34;]
+              A2[&#34;金融核心系统&#34;] --&gt; B1
+              A3[&#34;第三方数据&#34;] --&gt; B1
+              A4[&#34;客服系统&#34;] --&gt; B1
+              end
+
+              subgraph &#34;操作数据层ODS&#34;
+              B1 --&gt; C1[&#34;数据清洗&#34;]
+              C1 --&gt; C2[&#34;数据标准化&#34;]
+              C2 --&gt; C3[&#34;数据去重&#34;]
+              C3 --&gt; C4[&#34;异常检测&#34;]
+              end
+
+              subgraph &#34;客户主数据层MDM&#34;
+              C4 --&gt; D1[&#34;身份解析&#34;]
+              D1 --&gt; D2[&#34;客户合并&#34;]
+              D2 --&gt; D3[&#34;黄金记录生成&#34;]
+              D3 --&gt; D4[&#34;关系图谱构建&#34;]
+              end
+
+              subgraph &#34;分析数据层ADS&#34;
+              D4 --&gt; E1[&#34;客户画像宽表&#34;]
+              E1 --&gt; E2[&#34;实时特征计算&#34;]
+              E2 --&gt; E3[&#34;标签体系&#34;]
+              E3 --&gt; E4[&#34;偏好模型&#34;]
+              end
+
+              subgraph &#34;数据服务层&#34;
+              E4 --&gt; F1[&#34;API服务&#34;]
+              F1 --&gt; F2[&#34;实时查询&#34;]
+              F2 --&gt; F3[&#34;批量导出&#34;]
+              F3 --&gt; F4[&#34;数据订阅&#34;]
+              end
+
+              subgraph &#34;应用层&#34;
+              F4 --&gt; G1[&#34;营销自动化&#34;]
+              F4 --&gt; G2[&#34;风控决策&#34;]
+              F4 --&gt; G3[&#34;个性化推荐&#34;]
+              F4 --&gt; G4[&#34;报表分析&#34;]
+              end
+
+              style A1 fill:#f0f4f8,stroke:#334e68,stroke-width:1px,color:#334e68
+              style A2 fill:#f0f4f8,stroke:#334e68,stroke-width:1px,color:#334e68
+              style A3 fill:#f0f4f8,stroke:#334e68,stroke-width:1px,color:#334e68
+              style A4 fill:#f0f4f8,stroke:#334e68,stroke-width:1px,color:#334e68
+              style B1 fill:#e8e4df,stroke:#5d5349,stroke-width:2px,color:#5d5349
+              style C1 fill:#d9e2ec,stroke:#486581,stroke-width:1px,color:#486581
+              style C2 fill:#d9e2ec,stroke:#486581,stroke-width:1px,color:#486581
+              style C3 fill:#d9e2ec,stroke:#486581,stroke-width:1px,color:#486581
+              style C4 fill:#d9e2ec,stroke:#486581,stroke-width:1px,color:#486581
+              style D1 fill:#f0f4f8,stroke:#334e68,stroke-width:2px,color:#334e68
+              style D2 fill:#f0f4f8,stroke:#334e68,stroke-width:2px,color:#334e68
+              style D3 fill:#f0f4f8,stroke:#334e68,stroke-width:2px,color:#334e68
+              style D4 fill:#f0f4f8,stroke:#334e68,stroke-width:2px,color:#334e68
+              style E1 fill:#e8e4df,stroke:#5d5349,stroke-width:2px,color:#5d5349
+              style E2 fill:#e8e4df,stroke:#5d5349,stroke-width:2px,color:#5d5349
+              style E3 fill:#e8e4df,stroke:#5d5349,stroke-width:2px,color:#5d5349
+              style E4 fill:#e8e4df,stroke:#5d5349,stroke-width:2px,color:#5d5349
+              style F1 fill:#d9e2ec,stroke:#486581,stroke-width:2px,color:#486581
+              style F2 fill:#d9e2ec,stroke:#486581,stroke-width:2px,color:#486581
+              style F3 fill:#d9e2ec,stroke:#486581,stroke-width:2px,color:#486581
+              style F4 fill:#d9e2ec,stroke:#486581,stroke-width:2px,color:#486581
+              style G1 fill:#f0f4f8,stroke:#334e68,stroke-width:1px,color:#334e68
+              style G2 fill:#f0f4f8,stroke:#334e68,stroke-width:1px,color:#334e68
+              style G3 fill:#f0f4f8,stroke:#334e68,stroke-width:1px,color:#334e68
+              style G4 fill:#f0f4f8,stroke:#334e68,stroke-width:1px,color:#334e68
+            </div>
+          </div>
+          <p class="text-sm text-gray-600 mt-4 text-center">
+            图：分层数据架构，展示从数据源到应用的多层数据处理流程
+          </p>
+        </div>
+
+        <div class="grid grid-cols-1 lg:grid-cols-3 gap-8 mb-8">
+          <!-- ODS Layer -->
+          <div class="bg-white rounded-16 p-6 border border-earth-200 shadow-sm">
+            <h3 class="font-serif text-xl font-bold text-earth-800 mb-4">
+              <i class="fas fa-database text-earth-500 mr-3"></i>
+              操作数据层（ODS）
+            </h3>
+            <div class="space-y-4">
+              <div class="border-l-3 border-earth-400 pl-4">
+                <h4 class="font-semibold text-earth-700 mb-2">源系统数据接入</h4>
+                <p class="text-sm text-gray-600 mb-2">电商APP、金融核心系统、第三方数据</p>
+                <ul class="text-xs text-gray-500 space-y-1">
+                  <li>• 数据库CDC、消息队列、API接口</li>
+                  <li>• 批量ETL、实时流处理</li>
+                  <li>• 多源异构数据统一接入</li>
+                </ul>
+              </div>
+              <div class="border-l-3 border-earth-400 pl-4">
+                <h4 class="font-semibold text-earth-700 mb-2">数据清洗与标准化</h4>
+                <p class="text-sm text-gray-600 mb-2">格式校验、去重处理、异常检测</p>
+                <ul class="text-xs text-gray-500 space-y-1">
+                  <li>• 数据类型、长度、范围、枚举值校验</li>
+                  <li>• 基于业务键的重复记录识别</li>
+                  <li>• 统计离群、业务异常、时序异常检测</li>
+                </ul>
+              </div>
+              <div class="border-l-3 border-earth-400 pl-4">
+                <h4 class="font-semibold text-earth-700 mb-2">实时性保障</h4>
+                <p class="text-sm text-gray-600 mb-2">消息队列缓冲、流式处理架构</p>
+                <ul class="text-xs text-gray-500 space-y-1">
+                  <li>• Kafka、Pulsar等高吞吐消息队列</li>
+                  <li>• Flink、Spark Streaming实时处理</li>
+                  <li>• 秒级延迟的数据处理管道</li>
+                </ul>
+              </div>
+            </div>
+          </div>
+
+          <!-- MDM Layer -->
+          <div class="bg-white rounded-16 p-6 border border-earth-200 shadow-sm">
+            <h3 class="font-serif text-xl font-bold text-navy-800 mb-4">
+              <i class="fas fa-user-check text-navy-500 mr-3"></i>
+              客户主数据层（MDM）
+            </h3>
+            <div class="space-y-4">
+              <div class="border-l-3 border-navy-400 pl-4">
+                <h4 class="font-semibold text-navy-700 mb-2">客户唯一识别</h4>
+                <p class="text-sm text-gray-600 mb-2">身份解析、客户合并、黄金记录</p>
+                <ul class="text-xs text-gray-500 space-y-1">
+                  <li>• 确定性匹配与概率匹配结合<a href="http://www.51ima.com/news/11640.html" class="citation-link">[124]</a>
+                  </li>
+                  <li>• 复杂标识映射关系管理</li>
+                  <li>• 客户合并冲突解决策略</li>
+                </ul>
+              </div>
+              <div class="border-l-3 border-navy-400 pl-4">
+                <h4 class="font-semibold text-navy-700 mb-2">黄金记录生成</h4>
+                <p class="text-sm text-gray-600 mb-2">属性整合、冲突解决、版本管理</p>
+                <ul class="text-xs text-gray-500 space-y-1">
+                  <li>• 基础属性、联系信息、地址信息管理</li>
+                  <li>• 关系信息图谱存储与动态更新</li>
+                  <li>• 标签信息模型计算与定期刷新</li>
+                </ul>
+              </div>
+              <div class="border-l-3 border-navy-400 pl-4">
+                <h4 class="font-semibold text-navy-700 mb-2">关系图谱构建</h4>
+                <p class="text-sm text-gray-600 mb-2">社交关系、资金关系、企业关联</p>
+                <ul class="text-xs text-gray-500 space-y-1">
+                  <li>• 图数据库存储与查询优化</li>
+                  <li>• 关系强度与可信度计算</li>
+                  <li>• 社群发现与影响力分析</li>
+                </ul>
+              </div>
+            </div>
+          </div>
+
+          <!-- ADS Layer -->
+          <div class="bg-white rounded-16 p-6 border border-earth-200 shadow-sm">
+            <h3 class="font-serif text-xl font-bold text-earth-800 mb-4">
+              <i class="fas fa-chart-bar text-earth-500 mr-3"></i>
+              分析数据层（ADS）
+            </h3>
+            <div class="space-y-4">
+              <div class="border-l-3 border-earth-400 pl-4">
+                <h4 class="font-semibold text-earth-700 mb-2">客户画像宽表</h4>
+                <p class="text-sm text-gray-600 mb-2">基础画像、行为画像、价值画像</p>
+                <ul class="text-xs text-gray-500 space-y-1">
+                  <li>• 多维度客户属性整合</li>
+                  <li>• 实时统计特征与偏好标签</li>
+                  <li>• RFM、LTV、风险等级等计算</li>
+                </ul>
+              </div>
+              <div class="border-l-3 border-earth-400 pl-4">
+                <h4 class="font-semibold text-earth-700 mb-2">实时特征计算</h4>
+                <p class="text-sm text-gray-600 mb-2">滑动窗口聚合、事件序列识别</p>
+                <ul class="text-xs text-gray-500 space-y-1">
+                  <li>• 近1小时、近24小时行为统计</li>
+                  <li>• 复杂事件处理（CEP）模式识别</li>
+                  <li>• 机器学习模型在线推理</li>
+                </ul>
+              </div>
+              <div class="border-l-3 border-earth-400 pl-4">
+                <h4 class="font-semibold text-earth-700 mb-2">数据服务化</h4>
+                <p class="text-sm text-gray-600 mb-2">API服务、实时查询、批量导出</p>
+                <ul class="text-xs text-gray-500 space-y-1">
+                  <li>• RESTful API与GraphQL接口</li>
+                  <li>• 亚秒级响应的实时查询服务</li>
+                  <li>• 数据订阅与变更通知机制</li>
+                </ul>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Key Technologies -->
+        <div class="bg-white rounded-16 p-8 border border-earth-200 shadow-sm">
+          <h3 class="font-serif text-2xl font-bold text-navy-800 mb-6">关键技术支撑</h3>
+
+          <div class="grid grid-cols-1 md:grid-cols-3 gap-8">
+            <div class="space-y-6">
+              <div class="bg-gradient-to-br from-blue-50 to-blue-100 p-6 rounded-lg">
+                <h4 class="font-serif text-lg font-bold text-blue-800 mb-4">
+                  <i class="fas fa-fingerprint text-blue-600 mr-3"></i>
+                  客户身份解析
+                </h4>
+                <div class="space-y-3">
+                  <div class="flex items-start space-x-3">
+                    <div class="w-2 h-2 bg-blue-400 rounded-full mt-2"></div>
+                    <div>
+                      <h5 class="font-semibold text-blue-700 mb-1">多源ID映射</h5>
+                      <p class="text-sm text-gray-600">设备ID、手机号、邮箱、证件号统一映射</p>
+                    </div>
+                  </div>
+                  <div class="flex items-start space-x-3">
+                    <div class="w-2 h-2 bg-blue-400 rounded-full mt-2"></div>
+                    <div>
+                      <h5 class="font-semibold text-blue-700 mb-1">概率匹配</h5>
+                      <p class="text-sm text-gray-600">相似度计算+阈值判断的模糊匹配</p>
+                    </div>
+                  </div>
+                  <div class="flex items-start space-x-3">
+                    <div class="w-2 h-2 bg-blue-400 rounded-full mt-2"></div>
+                    <div>
+                      <h5 class="font-semibold text-blue-700 mb-1">图匹配</h5>
+                      <p class="text-sm text-gray-600">利用关联信息发现潜在关系</p>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <div class="space-y-6">
+              <div class="bg-gradient-to-br from-green-50 to-green-100 p-6 rounded-lg">
+                <h4 class="font-serif text-lg font-bold text-green-800 mb-4">
+                  <i class="fas fa-clock text-green-600 mr-3"></i>
+                  实时数据处理
+                </h4>
+                <div class="space-y-3">
+                  <div class="flex items-start space-x-3">
+                    <div class="w-2 h-2 bg-green-400 rounded-full mt-2"></div>
+                    <div>
+                      <h5 class="font-semibold text-green-700 mb-1">流式架构</h5>
+                      <p class="text-sm text-gray-600">Kafka + Flink + API的实时管道</p>
+                    </div>
+                  </div>
+                  <div class="flex items-start space-x-3">
+                    <div class="w-2 h-2 bg-green-400 rounded-full mt-2"></div>
+                    <div>
+                      <h5 class="font-semibold text-green-700 mb-1">特征计算</h5>
+                      <p class="text-sm text-gray-600">滑动窗口聚合与事件模式识别</p>
+                    </div>
+                  </div>
+                  <div class="flex items-start space-x-3">
+                    <div class="w-2 h-2 bg-green-400 rounded-full mt-2"></div>
+                    <div>
+                      <h5 class="font-semibold text-green-700 mb-1">标签更新</h5>
+                      <p class="text-sm text-gray-600">事件触发与定时刷新的混合机制</p>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <div class="space-y-6">
+              <div class="bg-gradient-to-br from-red-50 to-red-100 p-6 rounded-lg">
+                <h4 class="font-serif text-lg font-bold text-red-800 mb-4">
+                  <i class="fas fa-lock text-red-600 mr-3"></i>
+                  数据安全与隐私
+                </h4>
+                <div class="space-y-3">
+                  <div class="flex items-start space-x-3">
+                    <div class="w-2 h-2 bg-red-400 rounded-full mt-2"></div>
+                    <div>
+                      <h5 class="font-semibold text-red-700 mb-1">脱敏加密</h5>
+                      <p class="text-sm text-gray-600">AES-256加密与HSM硬件安全模块</p>
+                    </div>
+                  </div>
+                  <div class="flex items-start space-x-3">
+                    <div class="w-2 h-2 bg-red-400 rounded-full mt-2"></div>
+                    <div>
+                      <h5 class="font-semibold text-red-700 mb-1">隐私计算</h5>
+                      <p class="text-sm text-gray-600">联邦学习、多方安全计算技术</p>
+                    </div>
+                  </div>
+                  <div class="flex items-start space-x-3">
+                    <div class="w-2 h-2 bg-red-400 rounded-full mt-2"></div>
+                    <div>
+                      <h5 class="font-semibold text-red-700 mb-1">可信环境</h5>
+                      <p class="text-sm text-gray-600">TEE硬件隔离与安全计算</p>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- Conclusion -->
+      <section class="mb-16">
+        <div class="bg-gradient-to-br from-navy-50 to-earth-50 rounded-16 p-8 border border-earth-200 shadow-sm">
+          <h2 class="font-serif text-3xl font-bold text-navy-800 mb-6 text-center">
+            <i class="fas fa-lightbulb text-earth-500 mr-3"></i>
+            总结与展望
+          </h2>
+
+          <div class="prose prose-lg max-w-none text-center">
+            <p class="text-lg leading-relaxed text-gray-700 mb-6">
+              电商与金融行业融合的客户管理系统核心数据模型设计，通过<strong>分层架构</strong>实现了数据资产化运营的目标。从客户主数据到六大核心实体域的扩展，从One ID统一身份到实时特征计算的技术支撑，构建了一个既能满足电商场景高并发个性化需求，又能符合金融行业严格合规要求的数据基础设施。
+            </p>
+
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
+              <div class="bg-white p-6 rounded-lg shadow-sm">
+                <i class="fas fa-check-circle text-green-500 text-2xl mb-3"></i>
+                <h3 class="font-serif text-lg font-bold text-navy-800 mb-2">核心成果</h3>
+                <p class="text-sm text-gray-600">360°客户全景视图，打破数据孤岛，实现从数据碎片整合到客户画像落地的全链路解决方案</p>
+              </div>
+
+              <div class="bg-white p-6 rounded-lg shadow-sm">
+                <i class="fas fa-rocket text-blue-500 text-2xl mb-3"></i>
+                <h3 class="font-serif text-lg font-bold text-navy-800 mb-2">技术优势</h3>
+                <p class="text-sm text-gray-600">实时特征计算支撑秒级决策，隐私计算技术保障合规安全，可扩展标签体系适应业务快速迭代</p>
+              </div>
+
+              <div class="bg-white p-6 rounded-lg shadow-sm">
+                <i class="fas fa-chart-line text-purple-500 text-2xl mb-3"></i>
+                <h3 class="font-serif text-lg font-bold text-navy-800 mb-2">业务价值</h3>
+                <p class="text-sm text-gray-600">显著提升客户洞察完整性和营销转化率，降低获客成本和风险损失，实现数据驱动的精细化运营</p>
+              </div>
+            </div>
+
+            <p class="text-gray-600">
+              随着数字化转型的深入，这一数据模型架构将为企业在客户管理、风险防控、精准营销等方面提供坚实的技术基础，助力构建数据驱动的智能运营体系。
+            </p>
+          </div>
+        </div>
+      </section>
+    </main>
+
+    <script>
+        // Initialize Mermaid
+        mermaid.initialize({
+            startOnLoad: true,
+            theme: 'base',
+            themeVariables: {
+                // Primary colors with high contrast
+                primaryColor: '#f0f4f8',
+                primaryTextColor: '#334e68',
+                primaryBorderColor: '#334e68',
+                
+                // Secondary colors with good contrast
+                secondaryColor: '#e8e4df',
+                secondaryTextColor: '#5d5349',
+                secondaryBorderColor: '#5d5349',
+                
+                // Tertiary colors
+                tertiaryColor: '#d9e2ec',
+                tertiaryTextColor: '#486581',
+                tertiaryBorderColor: '#486581',
+                
+                // Background and lines
+                background: '#ffffff',
+                lineColor: '#627d98',
+                
+                // Node backgrounds with high contrast text
+                nodeBkg: '#ffffff',
+                nodeTextColor: '#334e68',
+                nodeBorder: '#334e68',
+                
+                // Cluster backgrounds
+                clusterBkg: '#f0f4f8',
+                clusterBorder: '#334e68',
+                
+                // Edge labels
+                edgeLabelBackground: '#ffffff',
+                
+                // Ensure all text is dark for readability
+                mainBkg: '#ffffff',
+                secondBkg: '#f0f4f8',
+                tertiaryBkg: '#e8e4df',
+                
+                // Error and warning colors for better visibility
+                errorBkgColor: '#fef2f2',
+                errorTextColor: '#991b1b',
+                
+                // Active and hover states
+                activeTaskBkgColor: '#dbeafe',
+                activeTaskBorderColor: '#2563eb',
+                
+                // Grid and axis
+                gridColor: '#e5e7eb',
+                section0: '#f0f4f8',
+                section1: '#e8e4df',
+                section2: '#d9e2ec',
+                section3: '#bcccdc'
+            },
+            flowchart: {
+                htmlLabels: true,
+                curve: 'basis',
+                padding: 20,
+                nodeSpacing: 50,
+                rankSpacing: 50
+            },
+            sequence: {
+                diagramMarginX: 20,
+                diagramMarginY: 20,
+                actorMargin: 20,
+                width: 120,
+                height: 60,
+                boxMargin: 10,
+                boxTextMargin: 5,
+                noteMargin: 10,
+                messageMargin: 20
+            },
+            gantt: {
+                fontSize: 13,
+                fontFamily: 'Inter, sans-serif',
+                sectionFontSize: 14,
+                numberSectionStyles: 4
+            }
+        });
+
+        // Initialize Mermaid Controls for zoom and pan
+        function initializeMermaidControls() {
+            const containers = document.querySelectorAll('.mermaid-container');
+
+            containers.forEach(container => {
+            const mermaidElement = container.querySelector('.mermaid');
+            let scale = 1;
+            let isDragging = false;
+            let startX, startY, translateX = 0, translateY = 0;
+
+            // 触摸相关状态
+            let isTouch = false;
+            let touchStartTime = 0;
+            let initialDistance = 0;
+            let initialScale = 1;
+            let isPinching = false;
+
+            // Zoom controls
+            const zoomInBtn = container.querySelector('.zoom-in');
+            const zoomOutBtn = container.querySelector('.zoom-out');
+            const resetBtn = container.querySelector('.reset-zoom');
+            const fullscreenBtn = container.querySelector('.fullscreen');
+
+            function updateTransform() {
+                mermaidElement.style.transform = `translate(${translateX}px, ${translateY}px) scale(${scale})`;
+
+                if (scale > 1) {
+                container.classList.add('zoomed');
+                } else {
+                container.classList.remove('zoomed');
+                }
+
+                mermaidElement.style.cursor = isDragging ? 'grabbing' : 'grab';
+            }
+
+            if (zoomInBtn) {
+                zoomInBtn.addEventListener('click', () => {
+                scale = Math.min(scale * 1.25, 4);
+                updateTransform();
+                });
+            }
+
+            if (zoomOutBtn) {
+                zoomOutBtn.addEventListener('click', () => {
+                scale = Math.max(scale / 1.25, 0.3);
+                if (scale <= 1) {
+                    translateX = 0;
+                    translateY = 0;
+                }
+                updateTransform();
+                });
+            }
+
+            if (resetBtn) {
+                resetBtn.addEventListener('click', () => {
+                scale = 1;
+                translateX = 0;
+                translateY = 0;
+                updateTransform();
+                });
+            }
+
+            if (fullscreenBtn) {
+                fullscreenBtn.addEventListener('click', () => {
+                if (container.requestFullscreen) {
+                    container.requestFullscreen();
+                } else if (container.webkitRequestFullscreen) {
+                    container.webkitRequestFullscreen();
+                } else if (container.msRequestFullscreen) {
+                    container.msRequestFullscreen();
+                }
+                });
+            }
+
+            // Mouse Events
+            mermaidElement.addEventListener('mousedown', (e) => {
+                if (isTouch) return; // 如果是触摸设备，忽略鼠标事件
+
+                isDragging = true;
+                startX = e.clientX - translateX;
+                startY = e.clientY - translateY;
+                mermaidElement.style.cursor = 'grabbing';
+                updateTransform();
+                e.preventDefault();
+            });
+
+            document.addEventListener('mousemove', (e) => {
+                if (isDragging && !isTouch) {
+                translateX = e.clientX - startX;
+                translateY = e.clientY - startY;
+                updateTransform();
+                }
+            });
+
+            document.addEventListener('mouseup', () => {
+                if (isDragging && !isTouch) {
+                isDragging = false;
+                mermaidElement.style.cursor = 'grab';
+                updateTransform();
+                }
+            });
+
+            document.addEventListener('mouseleave', () => {
+                if (isDragging && !isTouch) {
+                isDragging = false;
+                mermaidElement.style.cursor = 'grab';
+                updateTransform();
+                }
+            });
+
+            // 获取两点之间的距离
+            function getTouchDistance(touch1, touch2) {
+                return Math.hypot(
+                touch2.clientX - touch1.clientX,
+                touch2.clientY - touch1.clientY
+                );
+            }
+
+            // Touch Events - 触摸事件处理
+            mermaidElement.addEventListener('touchstart', (e) => {
+                isTouch = true;
+                touchStartTime = Date.now();
+
+                if (e.touches.length === 1) {
+                // 单指拖动
+                isPinching = false;
+                isDragging = true;
+
+                const touch = e.touches[0];
+                startX = touch.clientX - translateX;
+                startY = touch.clientY - translateY;
+
+                } else if (e.touches.length === 2) {
+                // 双指缩放
+                isPinching = true;
+                isDragging = false;
+
+                const touch1 = e.touches[0];
+                const touch2 = e.touches[1];
+                initialDistance = getTouchDistance(touch1, touch2);
+                initialScale = scale;
+                }
+
+                e.preventDefault();
+            }, { passive: false });
+
+            mermaidElement.addEventListener('touchmove', (e) => {
+                if (e.touches.length === 1 && isDragging && !isPinching) {
+                // 单指拖动
+                const touch = e.touches[0];
+                translateX = touch.clientX - startX;
+                translateY = touch.clientY - startY;
+                updateTransform();
+
+                } else if (e.touches.length === 2 && isPinching) {
+                // 双指缩放
+                const touch1 = e.touches[0];
+                const touch2 = e.touches[1];
+                const currentDistance = getTouchDistance(touch1, touch2);
+
+                if (initialDistance > 0) {
+                    const newScale = Math.min(Math.max(
+                    initialScale * (currentDistance / initialDistance),
+                    0.3
+                    ), 4);
+                    scale = newScale;
+                    updateTransform();
+                }
+                }
+
+                e.preventDefault();
+            }, { passive: false });
+
+            mermaidElement.addEventListener('touchend', (e) => {
+                // 重置状态
+                if (e.touches.length === 0) {
+                isDragging = false;
+                isPinching = false;
+                initialDistance = 0;
+
+                // 延迟重置isTouch，避免鼠标事件立即触发
+                setTimeout(() => {
+                    isTouch = false;
+                }, 100);
+                } else if (e.touches.length === 1 && isPinching) {
+                // 从双指变为单指，切换为拖动模式
+                isPinching = false;
+                isDragging = true;
+
+                const touch = e.touches[0];
+                startX = touch.clientX - translateX;
+                startY = touch.clientY - translateY;
+                }
+
+                updateTransform();
+            });
+
+            mermaidElement.addEventListener('touchcancel', (e) => {
+                isDragging = false;
+                isPinching = false;
+                initialDistance = 0;
+
+                setTimeout(() => {
+                isTouch = false;
+                }, 100);
+
+                updateTransform();
+            });
+
+            // Enhanced wheel zoom with better center point handling
+            container.addEventListener('wheel', (e) => {
+                e.preventDefault();
+                const rect = container.getBoundingClientRect();
+                const centerX = rect.width / 2;
+                const centerY = rect.height / 2;
+
+                const delta = e.deltaY > 0 ? 0.9 : 1.1;
+                const newScale = Math.min(Math.max(scale * delta, 0.3), 4);
+
+                // Adjust translation to zoom towards center
+                if (newScale !== scale) {
+                const scaleDiff = newScale / scale;
+                translateX = translateX * scaleDiff;
+                translateY = translateY * scaleDiff;
+                scale = newScale;
+
+                if (scale <= 1) {
+                    translateX = 0;
+                    translateY = 0;
+                }
+
+                updateTransform();
+                }
+            });
+
+            // Initialize display
+            updateTransform();
+            });
+        }
+
+        // Initialize mermaid controls after page load
+        document.addEventListener('DOMContentLoaded', function() {
+            // Initialize mermaid
+            mermaid.initialize({
+                startOnLoad: true,
+                theme: 'base',
+                themeVariables: {
+                    // Primary colors with high contrast
+                    primaryColor: '#f0f4f8',
+                    primaryTextColor: '#334e68',
+                    primaryBorderColor: '#334e68',
+                    
+                    // Secondary colors with good contrast
+                    secondaryColor: '#e8e4df',
+                    secondaryTextColor: '#5d5349',
+                    secondaryBorderColor: '#5d5349',
+                    
+                    // Tertiary colors
+                    tertiaryColor: '#d9e2ec',
+                    tertiaryTextColor: '#486581',
+                    tertiaryBorderColor: '#486581',
+                    
+                    // Background and lines
+                    background: '#ffffff',
+                    lineColor: '#627d98',
+                    
+                    // Node backgrounds with high contrast text
+                    nodeBkg: '#ffffff',
+                    nodeTextColor: '#334e68',
+                    nodeBorder: '#334e68',
+                    
+                    // Cluster backgrounds
+                    clusterBkg: '#f0f4f8',
+                    clusterBorder: '#334e68',
+                    
+                    // Edge labels
+                    edgeLabelBackground: '#ffffff',
+                    
+                    // Ensure all text is dark for readability
+                    mainBkg: '#ffffff',
+                    secondBkg: '#f0f4f8',
+                    tertiaryBkg: '#e8e4df',
+                    
+                    // Error and warning colors for better visibility
+                    errorBkgColor: '#fef2f2',
+                    errorTextColor: '#991b1b',
+                    
+                    // Active and hover states
+                    activeTaskBkgColor: '#dbeafe',
+                    activeTaskBorderColor: '#2563eb',
+                    
+                    // Grid and axis
+                    gridColor: '#e5e7eb',
+                    section0: '#f0f4f8',
+                    section1: '#e8e4df',
+                    section2: '#d9e2ec',
+                    section3: '#bcccdc'
+                },
+                flowchart: {
+                    htmlLabels: true,
+                    curve: 'basis',
+                    padding: 20,
+                    nodeSpacing: 50,
+                    rankSpacing: 50
+                },
+                sequence: {
+                    diagramMarginX: 20,
+                    diagramMarginY: 20,
+                    actorMargin: 20,
+                    width: 120,
+                    height: 60,
+                    boxMargin: 10,
+                    boxTextMargin: 5,
+                    noteMargin: 10,
+                    messageMargin: 20
+                },
+                gantt: {
+                    fontSize: 13,
+                    fontFamily: 'Inter, sans-serif',
+                    sectionFontSize: 14,
+                    numberSectionStyles: 4
+                }
+            });
+
+            // Initialize controls
+            initializeMermaidControls();
+
+            // Smooth scrolling for anchor links
+            document.querySelectorAll('a[href^="#"]').forEach(anchor => {
+                anchor.addEventListener('click', function (e) {
+                    e.preventDefault();
+                    const target = document.querySelector(this.getAttribute('href'));
+                    if (target) {
+                        target.scrollIntoView({
+                            behavior: 'smooth',
+                            block: 'start'
+                        });
+                    }
+                });
+            });
+
+            // Highlight current section in TOC
+            const sections = document.querySelectorAll('section[id]');
+            const tocLinks = document.querySelectorAll('.toc-fixed a[href^="#"]');
+
+            function highlightCurrentSection() {
+                let current = '';
+                sections.forEach(section => {
+                    const sectionTop = section.getBoundingClientRect().top;
+                    if (sectionTop <= 100) {
+                        current = section.getAttribute('id');
+                    }
+                });
+
+                tocLinks.forEach(link => {
+                    link.classList.remove('bg-earth-100', 'text-earth-800');
+                    if (link.getAttribute('href') === `#${current}`) {
+                        link.classList.add('bg-earth-100', 'text-earth-800');
+                    }
+                });
+            }
+
+            window.addEventListener('scroll', highlightCurrentSection);
+            highlightCurrentSection(); // Initial call
+        });
+    </script>
+  
+
+</body></html>
